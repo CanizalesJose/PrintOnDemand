@@ -93,5 +93,41 @@ DELIMITER //
     BEGIN
         SELECT modelId, modelName, modelImage, modelFile, modelBasePrice from models3D;
     END //
+    
+    CREATE PROCEDURE registrarMaterial(IN inputMaterialId VARCHAR(15), IN inputMaterialName VARCHAR(255), IN inputMaterialPriceModifier FLOAT)
+    BEGIN
+		INSERT INTO materials (materialId, materialName, materialPriceModifier) VALUES (inputMaterialId, inputMaterialName, inputMaterialPriceModifier);
+    END //
+    
+    CREATE PROCEDURE registrarValidMaterial(IN inputModelKey varchar(15), IN inputMaterialKey varchar(15))
+    BEGIN
+		INSERT INTO validmaterials (modelKey, materialKey) VALUES (inputModelKey, inputMaterialKey);
+    END //
+    
+    CREATE PROCEDURE registrarModelo(IN inputModelId varchar(15), IN inputModelName varchar(255), IN inputModelImage varchar(255), IN inputModelFile varchar(255), IN inputModelBasePrice float)
+    BEGIN
+		INSERT INTO models3d (modelId, modelName, modelImage, modelFile, modelBasePrice) VALUES (inputModelId, inputModelName, inputModelImage, inputModelFile, inputModelBasePrice);
+    END //
+    
+    CREATE PROCEDURE showAllModelId()
+    BEGIN
+		select modelId from models3D;
+    END //
+    
+    CREATE PROCEDURE showCatalogData(IN inputModelId varchar(15))
+    BEGIN
+		SELECT modelId, modelName, modelImage, modelFile, modelBasePrice from validmaterials 
+        INNER JOIN models3d ON validMaterials.modelKey = models3d.modelId 
+        WHERE modelId = inputModelId
+        GROUP BY modelId;
+    END //
+    
+    CREATE PROCEDURE getMaterialsFromModel(IN inputModelId varchar(15))
+    BEGIN
+		SELECT materialId, materialName, materialPriceModifier from validMaterials
+        INNER JOIN materials ON validMaterials.materialKey = materials.materialId
+        WHERE modelKey = inputModelId
+        GROUP BY materialId;
+    END //
 
 DELIMITER ;

@@ -1,4 +1,3 @@
-
 class Model3D:
 
     def __init__(self, modelId, modelName, modelImage, modelFile, modelBasePrice):

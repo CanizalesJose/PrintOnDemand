@@ -41,6 +41,10 @@
             <input type="password" id="pass" name="password" class="form-control border-2 border-black" placeholder="Password">
             <label class="form-label" for="pass">Contraseña</label>
         </div>
+
+        <!-- Mensaje de advertencia -->
+        {{mensaje | safe}}
+
         <!-- Botón -->
         <button type="submit" class="btn btn-dark btn-block mb-4">Enviar</button>
     </form>

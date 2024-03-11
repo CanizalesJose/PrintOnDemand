@@ -19,3 +19,39 @@ body {
 .navbar {
     background-color: var(--mainColor);
 }
+
+.row {
+    background-color: var(--color3);
+}
+
+.container {
+    background-color: var(--color3);
+    width: 90vw;
+}
+
+.imgArticulo {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+}
+.card {
+    margin-right: 10px;
+    transition: transform 0.2s;
+    background-color: #E2D9F3;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    background-color: #E0CFFC;
+}
+
+#catalogoCard {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.cantidad {
+    width: 40%;
+    margin-left: 5px;
+}

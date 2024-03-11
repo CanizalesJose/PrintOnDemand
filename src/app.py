@@ -6,6 +6,7 @@ from functools import wraps
 from config.config import config
 import json
 from modelos.model3D import Model3D
+from modelos.model3DDAO import model3DDAO
 from modelos.user import user
 from modelos.UserDAO import UserDAO
 
@@ -28,18 +29,10 @@ def admin_required(func):
         return func(*args, **kwargs)
     return decorated_view
 
-
-# Definición de rutas predeterminadas
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def defaultRute(path):
-    return redirect(url_for("iniciarSesion"))
-
 # Definición de rutas para páginas
 
 @app.route("/logout")
 def logout():
-    print("se hace un logout")
     if current_user.is_authenticated:
         logout_user()
     return redirect(url_for("iniciarSesion"))
@@ -55,29 +48,72 @@ def iniciarSesion():
             login_user(logged_user)
             return redirect(url_for('catalogo'))
         else:
-            return redirect(url_for('iniciarSesion'))
+            mensaje = """
+            <div class="alert alert-danger" role="alert">
+                Usuario o contraseña incorrectos...
+            </div>
+            """
+            return render_template('auth/InicioSesion.html', mensaje=mensaje)
     else:
         if current_user.is_authenticated:
             return redirect(url_for('catalogo'))
         return render_template('auth/InicioSesion.html')
 
 @app.route("/catalogo")
-@login_required
 def catalogo():
-    if current_user.is_authenticated:
-        print("esta autenticado")
-        usuarioRegistrado = "en efecto, se autenticó"
-        return render_template("auth/catalogo.html", usuarioRegistrado=usuarioRegistrado)
-    else:
-        print("no esta autenticado")
-        return render_template("auth/catalogo.html")
+
+    catalogo = ""
+    # Recorre cada modelo
+    for elemento in model3DDAO.showAllModelId(db):
+        # Conseguir los id de los modelos que se van a mostrar, los que tienen materiales asignados
+        validModel = model3DDAO.getValidModel(db, elemento)
+        if validModel != None:
+            # Conseguir los materiales del modelo
+            materials = model3DDAO.getMaterialsFromModel(db, elemento)
+            materialsList = ""
+            for material in materials:
+                materialsList = materialsList + f"""
+                <option value="{material["materialId"]}">{material["materialName"]} ($ * {material["materialPriceModifier"]})</option>
+                """
+
+            catalogo = catalogo + f"""
+             <div class="col-md-3 my-4">
+                    <div class="card text-dark rounded">
+                        <img src="{validModel[2]}" class="card-img-top imgArticulo" alt="Producto {validModel[0]}">
+                        <div class="card-body">
+                            <h5 class="card-title">{validModel[1]}</h5>
+                            <p class="card-text">${validModel[4]}
+                            <br>
+                            Cantidad: <input type="number" class="cantidad" id="cantidadProducto{validModel[0]}">
+                            </p>
+                            <br>
+                            <select class="form-select" aria-label="Default select example">
+                                {materialsList}
+                            </select>
+                            <br>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary agregar" id="button{validModel[0]}">Agregar al carrito</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            """
+    return render_template("auth/catalogo.html", catalogo=catalogo)
 
 @app.route("/pedidos")
 def pedidosPersonalizados():
     return render_template("plantillaBase.html")
 
 
+# Definición de rutas predeterminadas
+# @app.route('/', defaults={'path': ''})
+# @app.route('/<path:path>')
+# def defaultRute(path):
+#     return redirect(url_for("iniciarSesion"))
+
+
 # Al ejecutar el archivo, inicia el servidor
 if __name__ == "__main__":
     app.config.from_object(config['development'])
-    app.run(use_reloader=False)
+    app.run(use_reloader=True)
