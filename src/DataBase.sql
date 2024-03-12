@@ -84,12 +84,7 @@ DELIMITER //
 
     END //
 
-    CREATE PROCEDURE calcularPrecioModelo(IN inputModelId varchar(15))
-    BEGIN
-        SELECT modelName, materialName, modelBasePrice, materialPriceModifier, (modelBasePrice*materialPriceModifier) as total FROM validMaterials INNER JOIN models3D ON validMaterials.modelKey = models3D.modelId INNER JOIN materials ON validMaterials.materialKey = materials.materialId;
-    END //
-
-    CREATE PROCEDURE mostrarModelos()
+    CREATE PROCEDURE getAllModels()
     BEGIN
         SELECT modelId, modelName, modelImage, modelFile, modelBasePrice from models3D;
     END //

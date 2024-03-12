@@ -2,8 +2,6 @@
     --mainColor: #2b2d42;
     --color2: #8d99ae;
     --color3: #edf2f4;
-    --color4: #ef233c;
-    --color5: #d90429;
 }
 
 body {
@@ -54,4 +52,17 @@ body {
 .cantidad {
     width: 40%;
     margin-left: 5px;
+}
+
+.diVertical{
+    border-left: 1px solid var(--mainColor);
+    border-right: 1px solid var(--mainColor);
+    width: 1px;
+    height: 100vmax;
+}
+
+.imgMdl {
+    width: 100px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
 }

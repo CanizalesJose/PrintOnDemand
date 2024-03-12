@@ -84,7 +84,7 @@ def catalogo():
                             <h5 class="card-title">{validModel[1]}</h5>
                             <p class="card-text">${validModel[4]}
                             <br>
-                            Cantidad: <input type="number" class="cantidad" id="cantidadProducto{validModel[0]}">
+                            Cantidad: <input type="number" class="cantidad" id="cantidadProducto{validModel[0]}" value="1">
                             </p>
                             <br>
                             <select class="form-select" aria-label="Default select example">
@@ -104,6 +104,52 @@ def catalogo():
 @app.route("/pedidos")
 def pedidosPersonalizados():
     return render_template("plantillaBase.html")
+
+@app.route("/adminModels")
+def adminModels():
+    if current_user.is_authenticated and current_user.getUserType() == 1:
+        listaModelosHTML = ""
+        listaModelos = model3DDAO.getAllModels(db)
+
+        for modelo in listaModelos:
+            listaModelosHTML += f"""
+            <tr>
+                <td>{modelo.getModelId()}</td>
+                <td>{modelo.getModelName()}</td>
+                <td><img src="{modelo.getModelImage()}" class="imgMdl"></td>
+                <td>{modelo.getModelFile()}</td>
+                <td>{modelo.getModelBasePrice()}</td>
+                <td>
+                    <form id="updateForm{modelo.getModelId()}">
+                        <div class="form-floating mb-1">
+                            <input type="text" class="form-control" id="inputUpdatedModelName{modelo.getModelId()}" value="{modelo.getModelName()}">
+                            <label for="inputUpdatedModelName{modelo.getModelId()}">Nuevo nombre</label>
+                        </div>
+
+                        <div class="form-floating mb-1">
+                            <input type="text" class="form-control" id="inputUpdatedModelImage{modelo.getModelId()}" value="{modelo.getModelImage()}">
+                            <label for="inputUpdatedModelName{modelo.getModelId()}">Nueva Imagen</label>
+                        </div>
+
+                        <div class="form-floating mb-1">
+                            <input type="text" class="form-control" id="inputUpdatedModelFile{modelo.getModelId()}" value="{modelo.getModelFile()}">
+                            <label for="inputUpdatedModelFile{modelo.getModelId()}">Nuevo archivo</label>
+                        </div>
+
+                        <div class="form-floating mb-1">
+                            <input type="number" class="form-control" id="inputUpdatedModelBasePrice{modelo.getModelId()}" value="{modelo.getModelBasePrice()}">
+                            <label for="inputUpdatedModelBasePrice{modelo.getModelId()}">Nuevo precio base</label>
+                        </div>
+
+                        <button type="button" class="btn btn-primary bg-gradient mt-3" id="updateProduct{modelo.getModelId()}">Modificar</button>
+                        <button type="button" class="btn btn-danger bg-gradient mt-3" id="deleteProduct{modelo.getModelId()}">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            """
+        return render_template("auth/adminModels.html", listaModelosHTML=listaModelosHTML)
+    else:
+        return redirect('catalogo')
 
 
 # Definición de rutas predeterminadas

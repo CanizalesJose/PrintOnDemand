@@ -45,9 +45,23 @@ class model3DDAO():
                     "materialPriceModifier" : linea[2]
                 }
                 materials.append(registro)
-
-            print(resultados)
             return materials
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            cursor.close()
+
+    @classmethod
+    def getAllModels(self, db):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("call getAllModels()")
+            resultados = cursor.fetchall()
+            modelsList = []
+            for registro in resultados:
+                modelo = Model3D(registro[0], registro[1], registro[2], registro[3], registro[4])
+                modelsList.append(modelo)
+            return modelsList
         except Exception as ex:
             raise Exception(ex)
         finally:
