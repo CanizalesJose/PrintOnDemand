@@ -1,0 +1,57 @@
+{% extends 'plantillaBase.html' %}
+
+{% block cabecera %}
+{% endblock %}
+
+{% block titulo %}
+    Admin ValidMaterials
+{% endblock %}
+
+{% block contenido %}
+
+    <div class="container my-5 col-md-12 rounded shadow border border-4">
+        <div class="row">
+            <!-- Columna de formularios -->
+            <div class="col-md-5 p-3 text-center">
+                <h2>Vincular Materiales a modelos</h2>
+
+                <form id="addValidMaterialForm">
+                    <label>Seleccionar modelo:</label>
+                    <br><br>
+                    <select class="form-select" id="inputValidModel">
+                        {{validModelsOptionsHTML | safe}}
+                    </select>
+
+                    <label>Seleccionar material:</label>
+                    <br><br>
+                    <select class="form-select" id="inputValidMaterial">
+                        {{materialsListHTML | safe}}
+                    </select>
+
+                    <div class="text-center">
+                        <button type="button" class="btn btn-success bg-gradient my-3" id="botonAgregarValidMaterial">Vincular Modelo-Material</button>
+                    </div>
+                </form>
+
+            </div>
+            <!-- Tabla de contenido -->
+            <div class="col-md-7 p-3 text-center">
+                <h2>Vínculos</h2>
+                <table class="table table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Modelo 3D</th>
+                            <th scope="col">Material</th>
+                            <th scope="col">Model Image</th>
+                            <th scope="col">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{validListHTML | safe}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

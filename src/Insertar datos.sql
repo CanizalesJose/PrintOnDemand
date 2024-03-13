@@ -49,3 +49,9 @@ call registrarValidMaterial("model5", "material1");
 call registrarValidMaterial("model6", "material2");
 
 call showCatalogData("model3");
+
+select userName, usertype, userpassword, typeId, usertypeName materials from users inner join usertypes on users.usertype = usertypes.typeid;
+
+select modelKey from validMaterials group by modelKey;
+
+select materialKey, materialName, materialPriceModifier from validMaterials inner join materials on validMaterials.materialKey = materials.materialId where modelKey = "model1";

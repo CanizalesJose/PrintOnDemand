@@ -1,0 +1,61 @@
+{% extends 'plantillaBase.html' %}
+
+{% block cabecera %}
+{% endblock %}
+
+{% block titulo %}
+    Admin Materiales
+{% endblock %}
+
+{% block contenido %}
+
+    <div class="container my-5 col-md-12 rounded shadow border border-4">
+        <div class="row">
+            <!-- Columna de formularios -->
+            <div class="col-md-5 p-3 text-center">
+                <h2>Agregar Materiales</h2>
+
+                <form id="formModel">
+                    <div class="form-floating mb-4 mx-5">
+                        <input type="text" class="form-control" id="inputNewMaterialId" placeholder="MaterialId">
+                        <label for="inputNewMaterialId">Material Id: </label>
+                    </div>
+
+                    <div class="form-floating mb-4 mx-5">
+                        <input type="text" class="form-control" id="inputNewMaterialName" placeholder="MaterialName">
+                        <label for="inputNewMaterialName">Nombre del material: </label>
+                    </div>
+
+                    <div class="form-floating mb-4 mx-5">
+                        <input type="number" class="form-control" id="inputNewMaterialPriceModifier" placeholder="PriceModifier" value="1.0">
+                        <label for="inputNewMaterialPriceModifier">Modificador de precio del material:</label>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="button" class="btn btn-success bg-gradient my-3" id="botonAgregarUsuario">Agregar Usuario</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Divisor -->
+            <!-- Tabla de contenido -->
+            <div class="col-md-7 p-3 text-center">
+                <h2>Materiales</h2>
+
+                <table class="table table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">MaterialId</th>
+                            <th scope="col">Nombre del Material</th>
+                            <th scope="col">Modificador de precio</th>
+                            <th scope="col">Modificar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{materialsListHTML | safe}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'plantillaBase.html' %}
+
+{% block cabecera %}
+{% endblock %}
+
+{% block titulo %}
+    Admin Usuarios
+{% endblock %}
+
+{% block contenido %}
+
+    <div class="container my-5 col-md-12 rounded shadow border border-4">
+        <div class="row">
+        <!-- Columna de formularios -->
+            <div class="col-md-5 p-3 text-center">
+                <h2>Agregar Usuarios</h2>
+
+                <form id="formModel">
+                    <div class="form-floating mb-4 mx-5">
+                        <input type="text" class="form-control" id="inputNewUserName" placeholder="UserName">
+                        <label for="inputNewUserName">Username</label>
+                    </div>
+
+                    <div class="form-floating mb-4 mx-5" id="inputNewUsertType">
+                        <label>Tipo de usuario</label>
+                        <br><br>
+                        <select class="form-select" aria-label="Seleccion de tipo">
+                            {{userTypesListHTML | safe}}
+                        </select>
+                    </div>
+
+                    <div class="form-floating mb-4 mx-5">
+                        <input type="text" class="form-control" id="inputNewUserPassword" placeholder="UserPassword">
+                        <label for="inputNewUserPassword">Contraseña</label>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="button" class="btn btn-success bg-gradient my-3" id="botonAgregarUsuario">Agregar Usuario</button>
+                    </div>
+                </form>
+
+
+            </div>
+        <!-- Tabla de contenido -->
+            <div class="col-md-7 p-3 text-center">
+                <h2>Usuarios</h2>
+
+                <div class="overflow-scroll">
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col">Username</th>
+                                <th scope="col">UserTypeId</th>
+                                <th scope="col">Tipo de usuario</th>
+                                <th scope="col">Modificar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{userListHTML | safe}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

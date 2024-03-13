@@ -1,4 +1,5 @@
 from .user import user
+from .userType import userType
 
 class UserDAO():
 
@@ -32,3 +33,21 @@ class UserDAO():
         finally:
             cursor.close()
 
+    @classmethod
+    def getFullUserData(self, db):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select userName, usertype, userpassword, typeId, userTypeName from users inner join usertypes on users.usertype = usertypes.typeid")
+            resultados = cursor.fetchall()
+            fullUserList = []
+            for registro in resultados:
+                fullUserList.append({
+                    'usuario' : user(registro[0], registro[1], 'oculta'),
+                    'usertype' : userType(registro[3], registro[4])
+                    })
+
+            return fullUserList
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            cursor.close()

@@ -40,7 +40,11 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{{url_for('adminModels')}}">Modelos</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Usuarios</a></li>
+                        <li><a class="dropdown-item" href="{{url_for('adminMaterials')}}">Materiales</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{url_for('adminValidMaterials')}}">Materiales Validos</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{url_for('adminUsers')}}">Usuarios</a></li>
                     </ul>
                   </li>
                 {% endif %}
