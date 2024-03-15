@@ -108,10 +108,6 @@ def catalogo():
             """
     return render_template("auth/catalogo.html", catalogo=catalogo)
 
-@app.route("/pedidos")
-def pedidosPersonalizados():
-    return render_template("plantillaBase.html")
-
 @app.route("/adminModels")
 def adminModels():
     if current_user.is_authenticated and current_user.getUserType() == 1:
@@ -277,6 +273,13 @@ def adminValidMaterials():
         return render_template("auth/adminValidMaterials.html", validModelsOptionsHTML=validModelsOptionsHTML, materialsListHTML=materialsListHTML, validListHTML=validListHTML)
     else:
         return redirect('catalogo')
+
+@app.route("/pedidos")
+def pedidosPersonalizados():
+    if current_user.is_authenticated:
+        return render_template("auth/realizarPedidos.html")
+    else:
+        return redirect(url_for('catalogo'))
 
 
 # Definición de rutas predeterminadas
