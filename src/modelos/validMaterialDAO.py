@@ -66,3 +66,20 @@ class validMaterialDAO():
             raise Exception(ex)
         finally:
             cursor.close()
+        
+    @classmethod
+    def insertValidMaterial(self, db, valido):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select modelKey, materialKey from validMaterials where modelKey = %s and materialKey = %s", (valido.getModelKey(), valido.getMaterialKey()))
+            consulta = cursor.fetchone()
+            if consulta != None:
+                return 1
+            cursor.execute("insert into validMaterials (modelKey, materialKey) values (%s, %s)", (valido.getModelKey(), valido.getMaterialKey()))
+            db.connection.commit()
+            return 0
+        except Exception as ex:
+            db.connection.rollback()
+            raise Exception(ex)
+        finally:
+            cursor.close()

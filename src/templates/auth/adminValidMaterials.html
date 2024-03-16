@@ -15,22 +15,23 @@
             <div class="col-md-5 p-3 text-center">
                 <h2>Vincular Materiales a modelos</h2>
 
-                <form id="addValidMaterialForm">
+                <form action="/addValidMaterial" method="POST">
                     <label>Seleccionar modelo:</label>
                     <br><br>
-                    <select class="form-select" id="inputValidModel">
+                    <select class="form-select" name="inputValidModel">
                         {{validModelsOptionsHTML | safe}}
                     </select>
 
                     <label>Seleccionar material:</label>
                     <br><br>
-                    <select class="form-select" id="inputValidMaterial">
+                    <select class="form-select" name="inputValidMaterial">
                         {{materialsListHTML | safe}}
                     </select>
 
                     <div class="text-center">
-                        <button type="button" class="btn btn-success bg-gradient my-3" id="botonAgregarValidMaterial">Vincular Modelo-Material</button>
+                        <button type="submit" class="btn btn-success bg-gradient my-3" id="botonAgregarValidMaterial">Vincular Modelo-Material</button>
                     </div>
+                    {{mensaje | safe}}
                 </form>
 
             </div>

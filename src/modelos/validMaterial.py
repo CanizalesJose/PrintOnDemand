@@ -1,7 +1,7 @@
 class validMaterial():
     def __init__(self, modelKey, materialKey):
         self._modelKey = modelKey
-        self._materialKey = _materialKey
+        self._materialKey = materialKey
 
     def getModelKey(self):
         return self._modelKey

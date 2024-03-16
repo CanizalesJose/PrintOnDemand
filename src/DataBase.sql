@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS orders(
 
 -- modelFile es el nombre del archivo, vamos a imaginar que se sube el modelo
 CREATE TABLE IF NOT EXISTS models3D(
-    modelId varchar(15) primary key,
+    modelId varchar(15) primary key not null,
     modelName varchar (255),
     modelImage varchar(255),
     modelFile varchar(255),
@@ -35,24 +35,24 @@ CREATE TABLE IF NOT EXISTS models3D(
 ) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS materials(
-    materialId varchar(15) primary key,
+    materialId varchar(15) primary key not null,
     materialName varchar(255),
     materialPriceModifier float
 ) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS validMaterials(
     validMaterialsId int AUTO_INCREMENT primary key,
-    modelKey varchar(15),
-    materialKey varchar(15),
+    modelKey varchar(15) not null,
+    materialKey varchar(15) not null,
     unique key (modelKey, materialKey),
     foreign key (modelKey) references models3D(modelId),
     foreign key (materialKey) references materials(materialId)
 )ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS orderMaterials(
-    orderKey varchar(15),
-    modelKey varchar(15),
-    materialKey varchar(15),
+    orderKey varchar(15) not null,
+    modelKey varchar(15) not null,
+    materialKey varchar(15) not null,
     modelQuantity int,
     primary key (orderKey, modelKey, materialKey),
     foreign key (modelKey, materialKey) references validMaterials(modelKey, materialKey)

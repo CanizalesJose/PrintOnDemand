@@ -21,8 +21,6 @@ call registrarMaterial("material2", "ABS", 1.2);
 call registrarMaterial("material3", "PETG", 1.1);
 call registrarMaterial("material4", "TPU", 1.3);
 
-SELECT * FROM materials;
-
 call registrarValidMaterial("model1", "material1");
 call registrarValidMaterial("model1", "material2");
 call registrarValidMaterial("model1", "material3");
@@ -41,3 +39,7 @@ call registrarValidMaterial("model4", "material3");
 call registrarValidMaterial("model5", "material1");
 
 call registrarValidMaterial("model6", "material2");
+
+select * from validmaterials;
+
+delete from validmaterials where modelkey = "model6" and materialKey = "material2";

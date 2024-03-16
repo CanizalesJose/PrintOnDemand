@@ -66,3 +66,20 @@ class model3DDAO():
             raise Exception(ex)
         finally:
             cursor.close()
+
+    @classmethod
+    def insertModel3D(self, db, modelo):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select modelId from models3d where modelId=%s", (modelo.getModelId(),))
+            consulta = cursor.fetchone()
+            if consulta != None:
+                return 1
+            cursor.execute("insert into models3d (modelId, modelName, modelImage, modelFile, modelBasePrice) values (%s, %s, %s, %s, %s)", (modelo.getModelId(), modelo.getModelName(), modelo.getModelImage(), modelo.getModelFile(), float(modelo.getModelBasePrice())))
+            db.connection.commit()
+            return 0
+        except Exception as ex:
+            db.connection.rollback()
+            raise Exception(ex)
+        finally:
+            cursor.close()
