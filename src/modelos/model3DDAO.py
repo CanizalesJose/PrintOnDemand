@@ -83,3 +83,39 @@ class model3DDAO():
             raise Exception(ex)
         finally:
             cursor.close()
+    
+    @classmethod
+    def updateModel3D(self, db, modelo):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select modelId from models3D where modelId = %s", (modelo.getModelId(),))
+            consulta = cursor.fetchone()
+            if consulta == None:
+                return 1
+            else:
+                cursor.execute("update models3D set modelName = %s, modelImage = %s, modelFile = %s, modelBasePrice = %s where modelId = %s", (modelo.getModelName(), modelo.getModelImage(), modelo.getModelFile(), float(modelo.getModelBasePrice()), modelo.getModelId()))
+                db.connection.commit()
+                return 0
+        except Exception as ex:
+            db.connection.rollback()
+            raise Exception(ex)
+        finally:
+            cursor.close()
+    
+    @classmethod
+    def deleteModel3D(self, db, modelId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select modelId from models3D where modelId = %s", (modelId, ))
+            consulta = cursor.fetchone()
+            if consulta == None:
+                return 1
+            else:
+                cursor.execute("call deleteModel3D(%s)", (modelId, ))
+                db.connection.commit()
+                return 0
+        except Exception as ex:
+            db.connection.rollback()
+            raise Exception(ex)
+        finally:
+            cursor.close()

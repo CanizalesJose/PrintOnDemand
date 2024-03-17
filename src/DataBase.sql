@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users(
     userType tinyInt,
     userPassword varchar(120) not null,
     foreign key (userType) references userTypes(typeId)
+    on delete cascade
 ) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS orders(
@@ -22,7 +23,7 @@ CREATE TABLE IF NOT EXISTS orders(
     orderTotalCost float,
     orderUser varchar(15) null,
     orderAddress varchar(255),
-    foreign key (orderUser) references users(userName)
+    foreign key (orderUser) references users(userName) on delete set null
 ) ENGINE=INNODB;
 
 -- modelFile es el nombre del archivo, vamos a imaginar que se sube el modelo
@@ -45,8 +46,10 @@ CREATE TABLE IF NOT EXISTS validMaterials(
     modelKey varchar(15) not null,
     materialKey varchar(15) not null,
     unique key (modelKey, materialKey),
-    foreign key (modelKey) references models3D(modelId),
+    foreign key (modelKey) references models3D(modelId)
+    on delete cascade,
     foreign key (materialKey) references materials(materialId)
+    on delete cascade
 )ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS orderMaterials(
@@ -56,6 +59,7 @@ CREATE TABLE IF NOT EXISTS orderMaterials(
     modelQuantity int,
     primary key (orderKey, modelKey, materialKey),
     foreign key (modelKey, materialKey) references validMaterials(modelKey, materialKey)
+    on delete no action
 ) ENGINE=INNODB;
 
 -- Creación de procedimientos
@@ -124,5 +128,19 @@ DELIMITER //
         WHERE modelKey = inputModelId
         GROUP BY materialId;
     END //
-
+    
+	CREATE PROCEDURE deleteModel3D(IN inputModelId varchar(15))
+    BEGIN
+		delete from models3d where modelId = inputModelId;
+    END //
+    
+    CREATE PROCEDURE deleteMaterial(IN inputMaterialId varchar(15))
+    BEGIN
+		delete from materials where materialId = inputMaterialId;
+    END //
+    
+    CREATE PROCEDURE deleteValidMaterial(IN inputModelKey varchar(15), IN inputMaterialKey varchar(15))
+    BEGIN
+		delete from validmaterials where modelKey = inputModelKey and materialKey = inputMaterialKey;
+    END //
 DELIMITER ;

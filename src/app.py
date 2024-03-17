@@ -126,35 +126,34 @@ def adminModels():
                 <td>{modelo.getModelFile()}</td>
                 <td>{modelo.getModelBasePrice()}</td>
                 <td>
-                    <form id="updateForm{modelo.getModelId()}">
+                    <form action="/updateModel" method="POST">
                         <input type="hidden" name="modelId" value="{modelo.getModelId()}">
                         <div class="form-floating mb-1">
-                            <input type="text" class="form-control" name="inputUpdatedModelName{modelo.getModelId()}" value="{modelo.getModelName()}">
-                            <label for="inputUpdatedModelName{modelo.getModelId()}">Nuevo nombre</label>
+                            <input type="text" class="form-control" name="updatedModelName" value="{modelo.getModelName()}">
+                            <label for="updatedModelName">Nuevo nombre</label>
                         </div>
 
                         <div class="form-floating mb-1">
-                            <input type="text" class="form-control" name="inputUpdatedModelImage{modelo.getModelId()}" value="{modelo.getModelImage()}">
-                            <label for="inputUpdatedModelName{modelo.getModelId()}">Nueva Imagen</label>
+                            <input type="text" class="form-control" name="updatedModelImage" value="{modelo.getModelImage()}">
+                            <label for="updatedModelName">Nueva Imagen</label>
                         </div>
 
                         <div class="form-floating mb-1">
-                            <input type="text" class="form-control" name="inputUpdatedModelFile{modelo.getModelId()}" value="{modelo.getModelFile()}">
-                            <label for="inputUpdatedModelFile{modelo.getModelId()}">Nuevo archivo</label>
+                            <input type="text" class="form-control" name="updatedModelFile" value="{modelo.getModelFile()}">
+                            <label for="updatedModelFile">Nuevo archivo</label>
                         </div>
 
                         <div class="form-floating mb-1">
-                            <input type="number" class="form-control" name="inputUpdatedModelBasePrice{modelo.getModelId()}" value="{modelo.getModelBasePrice()}">
-                            <label for="inputUpdatedModelBasePrice{modelo.getModelId()}">Nuevo precio base</label>
+                            <input type="number" step="0.01" class="form-control" name="updatedModelBasePrice" value="{modelo.getModelBasePrice()}">
+                            <label for="updatedModelBasePrice">Nuevo precio base</label>
                         </div>
 
-                        <!-- <div class="form-floating mb-1">
-                            <input type="file" class="form-control" id="inputUpdatedModelFile{modelo.getModelFile()}" value="{modelo.getModelFile()}">
-                            <label for="inputUpdatedModelBasePrice{modelo.getModelId()}">Archivo del modelo:</label>
-                        </div> -->
+                        <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este modelo?')">Modificar</button>
+                    </form>
 
-                        <button type="button" class="btn btn-primary bg-gradient mt-3" id="updateProduct{modelo.getModelId()}">Modificar</button>
-                        <button type="button" class="btn btn-danger bg-gradient mt-3" id="deleteProduct{modelo.getModelId()}">Eliminar</button>
+                    <form action="/deleteModel" method="POST">
+                        <input type="hidden" name="modelId" value="{modelo.getModelId()}">
+                        <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este modelo? Se eliminaran todos las relaciones con materiales asignadas')">Eliminar</button>
                     </form>
                 </td>
             </tr>
@@ -221,20 +220,23 @@ def adminMaterials():
                 <td scope="col">{material.getMaterialName()}</td>
                 <td scope="col">x {material.getMaterialPriceModifier()}</td>
                 <td scope="col">
-                    <form id="updateFormMaterial{material.getMaterialId()}">
+                    <form action="/updateMaterial" method="POST">
                         <input type="hidden" name="materialId" value="{material.getMaterialId()}">
                         <div class="form-floating mb-1">
-                            <input type="text" class="form-control" id="inputUpdatedMaterialName{material.getMaterialId()}" value="{material.getMaterialName()}">
-                            <label for="inputUpdatedMaterialName{material.getMaterialId()}">Nuevo Nombre</label>
+                            <input type="text" class="form-control" placeholder="newMaterialName" name="newMaterialName" value="{material.getMaterialName()}">
+                            <label for="newMaterialName">Nuevo Nombre</label>
                         </div>
 
                         <div class="form-floating mb-1">
-                            <input type="number" class="form-control" id="inputUpdatedMaterialPriceModifier{material.getMaterialId()}" value="{material.getMaterialPriceModifier()}">
-                            <label for="inputUpdatedMaterialPriceModifier{material.getMaterialId()}">Multiplicador de precio</label>
+                            <input type="number" step="0.01" class="form-control" name="newMaterialPriceModifier" placeholder="price" value="{material.getMaterialPriceModifier()}">
+                            <label for="newMaterialPriceModifier">Multiplicador de precio</label>
                         </div>
 
-                        <button type="button" class="btn btn-primary bg-gradient mt-3" id="updateMaterial{material.getMaterialId()}">Modificar</button>
-                        <button type="button" class="btn btn-danger bg-gradient mt-3" id="deleteMaterial{material.getMaterialId()}">Eliminar</button>
+                        <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este material?')">Modificar</button>
+                    </form>
+                    <form action="/deleteMaterial" method="POST">
+                        <input type="hidden" name="materialId" value="{material.getMaterialId()}">
+                        <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este material? Se eliminarán las relaciones con modelos asignadas')">Eliminar</button>
                     </form>
                 </td>
             </tr>
@@ -248,7 +250,7 @@ def adminValidMaterials():
     if current_user.is_authenticated and current_user.getUserType() == 1:
         mensaje = request.args.get('mensaje', "")
         # Generar lista de modelos validos
-        validModels = validMaterialDAO.getModelsIdWithMaterials(db)
+        validModels = model3DDAO.getAllModels(db)
         validModelsOptionsHTML = ""
         if validModels != None:
             for modelo in validModels:
@@ -275,10 +277,10 @@ def adminValidMaterials():
                         <td>{registro["materialName"]}</td>
                         <td> <img src="{registro["modelImage"]}" class="imgMdl"></td>
                         <td>
-                            <form>
+                            <form action="/deleteValidMaterial" method="POST">
                                 <input type="hidden" name="modelKey" value="{registro['modelKey']}">
                                 <input type="hidden" name="materialKey" value="{registro['materialKey']}">
-                                <button type="button" class="btn btn-danger bg-gradient mt-3" id="deleteValidElement{registro['modelKey']+registro['materialKey']}">Eliminar</button>
+                                <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este material del modelo?')">Eliminar</button>
                             </form>
                         </td>
                     </tr>
@@ -294,7 +296,12 @@ def pedidosPersonalizados():
         return render_template("auth/realizarPedidos.html")
     else:
         return redirect(url_for('catalogo'))
-    
+
+
+# ----------------------------------------------------------------------------------------------------
+# Comienzan los métodos POST, para administrar los registros
+
+# Modelos
 @app.route("/addModel", methods=["GET", "POST"])
 def addModel():
     if request.method == "POST":
@@ -331,7 +338,47 @@ def addModel():
     else:
         mensaje = ""
         return redirect(url_for("adminModels", mensaje=mensaje))
+
+@app.route("/updateModel", methods=["POST", "GET"])
+def updateModel():
+    if request.method == "POST":
+        mensaje = ""
+        modelId = request.form['modelId']
+        modelName = request.form['updatedModelName']
+        modelImage = request.form['updatedModelImage']
+        modelFile = request.form['updatedModelFile']
+        modelBasePrice = float(request.form['updatedModelBasePrice'])
+        updatedModel = Model3D(modelId, modelName, modelImage, modelFile, modelBasePrice)
+
+        if len(updatedModel.getModelId()) == 0 or len(updatedModel.getModelName()) == 0 or len(updatedModel.getModelImage()) == 0 or len(updatedModel.getModelFile()) == 0 or float(updatedModel.getModelBasePrice()) <= 0 or model3DDAO.updateModel3D(db, updatedModel) == 1:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema con los datos... </div>"
+            return redirect(url_for("adminModels", mensaje=mensaje))
+        else:
+            mensaje = f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{updatedModel.getModelId()}\" actualizado!</div>"
+            return redirect(url_for("adminModels", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminModels", mensaje=mensaje))
+
+@app.route("/deleteModel", methods=["POST", "GET"])
+def deleteModel():
+    if request.method == "POST":
+        mensaje = ""
+        modelId = request.form['modelId']
+
+        if model3DDAO.deleteModel3D(db, modelId) == 1:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema inesperado... </div>"
+            return redirect(url_for("adminModels", mensaje=mensaje))
+
+        else:
+            mensaje = f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{modelId}\" eliminado!</div>"
+            return redirect(url_for("adminModels", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminModels", mensaje=mensaje))
     
+
+# Materiales
 @app.route("/addMaterial", methods=["GET", "POST"])
 def addMaterial():
     if request.method == "POST":
@@ -360,6 +407,46 @@ def addMaterial():
         mensaje = ""
         return redirect(url_for("adminMaterials"), mensaje=mensaje)
     
+@app.route("/updateMaterial", methods=["GET", "POST"])
+def updateMaterial():
+    if request.method == "POST":
+        mensaje = ""
+        currentId = request.form['materialId']
+        newName = request.form['newMaterialName']
+        newPriceMod = request.form['newMaterialPriceModifier']
+
+        updatedMaterial = material(currentId, newName, float(newPriceMod))
+
+        if len(updatedMaterial.getMaterialName()) == 0 or updatedMaterial.getMaterialPriceModifier() <= 0 or materialDAO.updateMaterial(db, updatedMaterial) == 1:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al actualizar... </div>"
+        else:
+            mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Material actualizado! </div>"
+
+        return redirect(url_for("adminMaterials", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminMaterials", mensaje=mensaje))
+
+@app.route("/deleteMaterial", methods=["GET", "POST"])
+def deleteMaterial():
+    if request.method == "POST":
+        mensaje = ""
+        materialId = request.form['materialId']
+
+        newMaterial = material(materialId, "", "")
+        try:
+            if materialDAO.deleteMaterial(db, newMaterial.getMaterialId()) == 1:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al eliminar... </div>"
+            else:
+                mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Material eliminado! </div>"
+        except Exception as ex:
+            mensaje =  "<div class=\"alert alert-success\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+        return redirect(url_for("adminMaterials", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminMaterials", mensaje=mensaje))
+
+# Materiales Validos
 @app.route("/addValidMaterial", methods=["GET", "POST"])
 def addValidMaterials():
     if request.method == "POST":
@@ -376,6 +463,27 @@ def addValidMaterials():
     else:
         mensaje = ""
         return redirect(url_for("adminValidMaterials", mensaje=mensaje))
+
+@app.route("/deleteValidMaterial", methods=["GET", "POST"])
+def deleteValidMaterial():
+    if request.method == "POST":
+        mensaje = ""
+        modelKey = request.form['modelKey']
+        materialKey = request.form['materialKey']
+        eliminado = validMaterial(modelKey, materialKey)
+        try:
+            if validMaterialDAO.deleteValidMaterial(db,eliminado) == 1:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al eliminar... </div>"
+            else:
+                mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Relación eliminada! </div>"
+        except Exception as ex:
+            mensaje = "<div class=\"alert alert-success\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+        return redirect(url_for("adminValidMaterials", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminValidMaterials", mensaje=mensaje))
+    
+# Usuarios
 
 
 # Definición de rutas predeterminadas

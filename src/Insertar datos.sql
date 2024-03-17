@@ -1,5 +1,13 @@
 use PrintOnDemand;
 
+delete from validmaterials;
+delete from ordermaterials;
+delete from users;
+delete from materials;
+delete from models3d;
+delete from orders;
+delete from usertypes;
+
 call registrarModelo("model1", "ArticulatedWhaleShark", "https://cdn.thingiverse.com/assets/d9/91/d7/44/d5/large_display_5939294b-57ab-4709-a2e5-3182f29fa89e.png", "ArticulatedWhaleShark.stl", 10.99);
 call registrarModelo('model2', 'Cabinet Door Organizer', 'https://cdn.thingiverse.com/assets/8a/96/8b/7a/3b/large_display_707af456-9de0-4a2c-9e8a-1e7780eeef75.png', 'Cabinet_Door_Organizer_5.stl', 12.99);
 call registrarModelo('model3', 'Anatomically Correct Human Skull (Homo Sapiens Sapiens)', 'https://cdn.thingiverse.com/assets/9a/e4/cd/5f/dc/large_display_f6557724-0b6c-4cea-bdc1-067a0a5194b9.png', 'Human_Skull_Cut_OBJ_3Demon.obj', 8.99);
@@ -40,6 +48,4 @@ call registrarValidMaterial("model5", "material1");
 
 call registrarValidMaterial("model6", "material2");
 
-select * from validmaterials;
-
-delete from validmaterials where modelkey = "model6" and materialKey = "material2";
+select * from models3d;

@@ -27,3 +27,39 @@ class materialDAO():
             raise Exception(ex)
         finally:
             cursor.close()
+
+    @classmethod
+    def updateMaterial(self, db, material):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select materialId from materials where materialId = %s", (material.getMaterialId(),))
+            consulta = cursor.fetchone()
+            if consulta == None:
+                return 1
+            else:
+                cursor.execute("update materials set materialName = %s, materialPriceModifier = %s where materialId = %s", (material.getMaterialName(), float(material.getMaterialPriceModifier()), material.getMaterialId()))
+                db.connection.commit()
+                return 0
+        except Exception as ex:
+            db.connection.rollback()
+            raise Exception(ex)
+        finally:
+            cursor.close()
+    
+    @classmethod
+    def deleteMaterial(self, db, materialId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select materialId from materials where materialId = %s", (materialId, ))
+            consulta = cursor.fetchone()
+            if consulta == None:
+                return 1
+            else:
+                cursor.execute("call deleteMaterial(%s)", (materialId, ))
+                db.connection.commit()
+                return 0
+        except Exception as ex:
+            db.connection.rollback()
+            raise Exception(ex)
+        finally:
+            cursor.close()
