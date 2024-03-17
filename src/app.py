@@ -165,6 +165,7 @@ def adminModels():
 @app.route("/adminUsers")
 def adminUsers():
     if current_user.is_authenticated and current_user.getUserType() == 1:
+        mensaje = request.args.get('mensaje', "")
         # Genera los tipos de usuarios y los agrega a las opciones
         userTypesListHTML = ""
         userTypesList = userTypeDAO.getUserTypes(db)
@@ -182,28 +183,33 @@ def adminUsers():
                 <td>{registro['usertype'].getUserTypeId()}</td>
                 <td>{registro['usertype'].getUserTypeName()}</td>
                 <td>
-                    <form id="updateUser{registro['usuario'].getUserName()}">
-                        <input type="hidden" name="userName" value="{registro['usuario'].getUserName()}">
+                    <form action="/updateUser" method="POST">
+                        <input type="hidden" name="currentUserName" value="{registro['usuario'].getUserName()}">
+
                         <div class="form-floating mb-1">
-                            <input type="text" class="form-control" id="inputUpdatedUsername{registro['usuario'].getUserName()}" value="{registro['usuario'].getUserName()}">
-                            <label for="inputUpdatedUsername{registro['usuario'].getUserName()}">Nuevo nombre</label>
+                            <input type="text" class="form-control" name="newUsername" value="{registro['usuario'].getUserName()}">
+                            <label for="newUsername">Nuevo nombre</label>
+                        </div>
+                        
+                        <div class="form-floating mb-1">
+                            <select class="form-select" aria-label="Seleccion de tipo" name="newUserType" placeholder="newUserType">
+                                {userTypesListHTML}
+                            </select>
+                            <label for="newUserType">Tipo de usuario</label>
                         </div>
 
-                        <label >Tipo de usuario</label
-                        <br><br>
-                        <select class="form-select" aria-label="Seleccion de tipo" id="inputUpdatedUserType{registro['usuario'].getUserName()}">
-                            {userTypesListHTML}
-                        </select>
+                        <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estas seguro de modificar este usuario?')">Modificar</button>
+                    </form>
 
-
-                        <button type="button" class="btn btn-primary bg-gradient mt-3" id="updateUser{registro['usuario'].getUserName()}">Modificar</button>
-                        <button type="button" class="btn btn-danger bg-gradient mt-3" id="deleteUser{registro['usuario'].getUserName()}">Eliminar</button>
+                    <form action="/deleteUser" method="POST">
+                        <input type="hidden" name="currentUserName" value="{registro['usuario'].getUserName()}">
+                        <button type="submit" class="btn btn-danger bg-gradient mt-3" id="deleteUser{registro['usuario'].getUserName()}" onclick="return confirm('¿Estas seguro de eliminar este usuario?')">Eliminar</button>
                     </form>
                 </td>
             </tr>
             """
         
-        return render_template("auth/adminUsers.html", userTypesListHTML=userTypesListHTML, userListHTML=userListHTML)
+        return render_template("auth/adminUsers.html", userTypesListHTML=userTypesListHTML, userListHTML=userListHTML, mensaje=mensaje)
     else:
         return redirect('catalogo')
 
@@ -477,20 +483,94 @@ def deleteValidMaterial():
             else:
                 mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Relación eliminada! </div>"
         except Exception as ex:
-            mensaje = "<div class=\"alert alert-success\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
         return redirect(url_for("adminValidMaterials", mensaje=mensaje))
     else:
         mensaje = ""
         return redirect(url_for("adminValidMaterials", mensaje=mensaje))
     
 # Usuarios
+@app.route("/addUser", methods=["GET", "POST"])
+def addUser():
+    if request.method == "POST":
+        mensaje = ""
+        newUsername = request.form['inputNewUserName']
+        newUsertype = int(request.form['inputNewUserType'])
+        newPassword = request.form['inputNewUserPassword']
+        newUser = user(newUsername, newUsertype, newPassword)
+        try:
+            if len(newUser.getUserName()) == 0 or len(newUser.getUserName()) > 100:
+                mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre debe ser tener entre 1 y 100 caracteres </div>"
+            if len(newUser.getUserPassword()) == 0:
+                mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> La contraseña no puede estar vacía </div>"
+            if UserDAO.addUser(db, newUser) == 1:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> El usuario ya existe </div>"
+            else:
+                mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Usuario agregado! </div>"
+            
+        except Exception as ex:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+        
+        return redirect(url_for("adminUsers", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminUsers", mensaje=mensaje))
 
+@app.route("/updateUser", methods=["GET", "POST"])
+def updateUser():
+    if request.method == "POST":
+        mensaje = ""
+        currentUsername = request.form['currentUserName']
+        newUsername = request.form['newUsername']
+        newUserType = int(request.form['newUserType'])
 
-# Definición de rutas predeterminadas
-# @app.route('/', defaults={'path': ''})
-# @app.route('/<path:path>')
-# def defaultRute(path):
-#     return redirect(url_for("iniciarSesion"))
+        try:
+            if len(newUsername) == 0:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío </div>"
+            
+            if current_user.getUserName() == currentUsername:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "No puedes modificar al usuario activo" + "</div>"
+                return redirect(url_for("adminUsers", mensaje=mensaje))
+            resultado = UserDAO.updateUser(db, currentUsername, newUsername, newUserType)
+
+            if resultado == 1:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>"
+            if resultado == 2:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "El nuevo nombre de usuario ya existe" + "</div>"
+            if resultado == 0:
+                mensaje = "<div class=\"alert alert-success\" role=\"alert\">" + "Usuario modificado" + "</div>"
+        except Exception as ex:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+        return redirect(url_for("adminUsers", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminUsers", mensaje=mensaje))
+    
+@app.route("/deleteUser", methods=["GET", "POST"])
+def deleteUser():
+    if request.method == "POST":
+        mensaje = ""
+        deletedUsername = request.form['currentUserName']
+        if current_user.getUserName() == deletedUsername:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "No puedes eliminar al usuario activo" + "</div>"
+            return redirect(url_for("adminUsers", mensaje=mensaje))
+        
+        try:
+            if UserDAO.deleteUser(db, deletedUsername) == 1:
+                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>"
+            else:
+                mensaje = "<div class=\"alert alert-success\" role=\"alert\">" + "Usuario eliminado" + "</div>"
+        except Exception as ex:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+        return redirect(url_for("adminUsers", mensaje=mensaje))
+    else:
+        mensaje = ""
+        return redirect(url_for("adminUsers", mensaje=mensaje))
+
+# En caso de ingresar una ruta que no existe
+@app.errorhandler(404)
+def rutaInexistente(e):
+    return redirect(url_for('iniciarSesion'))
 
 
 # Al ejecutar el archivo, inicia el servidor

@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS orders(
     orderTotalCost float,
     orderUser varchar(15) null,
     orderAddress varchar(255),
-    foreign key (orderUser) references users(userName) on delete set null
+    foreign key (orderUser) references users(userName) on delete set null on update cascade
 ) ENGINE=INNODB;
 
 -- modelFile es el nombre del archivo, vamos a imaginar que se sube el modelo
@@ -142,5 +142,15 @@ DELIMITER //
     CREATE PROCEDURE deleteValidMaterial(IN inputModelKey varchar(15), IN inputMaterialKey varchar(15))
     BEGIN
 		delete from validmaterials where modelKey = inputModelKey and materialKey = inputMaterialKey;
+    END //
+    
+    CREATE PROCEDURE updateUser(IN currentUsername varchar(100), IN inputUsername varchar(100), in inputUserType tinyint)
+    BEGIN
+		update users set userName = inputUsername, userType = inputUserType where userName = currentUsername;
+    END //
+    
+    CREATE PROCEDURE deleteUser(IN deletedUsername varchar(100))
+    BEGIN
+		delete from users where userName = deletedUsername;
     END //
 DELIMITER ;

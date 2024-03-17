@@ -15,30 +15,30 @@
             <div class="col-md-5 p-3 text-center">
                 <h2>Agregar Usuarios</h2>
 
-                <form id="formModel">
+                <form action="/addUser" method="POST">
                     <div class="form-floating mb-4 mx-5">
-                        <input type="text" class="form-control" id="inputNewUserName" placeholder="UserName">
+                        <input type="text" class="form-control" name="inputNewUserName" placeholder="UserName">
                         <label for="inputNewUserName">Nombre de usuario:</label>
                     </div>
 
-                    <div class="form-floating mb-4 mx-5" id="inputNewUsertType">
-                        <label>Tipo de usuario:</label>
-                        <br><br>
-                        <select class="form-select" aria-label="Seleccion de tipo">
+                    <div class="form-floating mb-4 mx-5">
+                        <select class="form-select" name="inputNewUserType">
                             {{userTypesListHTML | safe}}
                         </select>
+                        <label for="inputNewUserType">Tipo de usuario:</label>
                     </div>
 
                     <div class="form-floating mb-4 mx-5">
-                        <input type="password" class="form-control" id="inputNewUserPassword" placeholder="UserPassword">
+                        <input type="password" class="form-control" name="inputNewUserPassword" placeholder="UserPassword">
                         <label for="inputNewUserPassword">Contraseña:</label>
                     </div>
 
                     <div class="text-center">
-                        <button type="button" class="btn btn-success bg-gradient my-3" id="botonAgregarUsuario">Agregar Usuario</button>
+                        <button type="submit" class="btn btn-success bg-gradient my-3" onclick="return confirm('¿Estas seguro de agregar este usuario?')">Agregar Usuario</button>
                     </div>
+                    {{mensaje | safe}}
                 </form>
-
+                
 
             </div>
         <!-- Tabla de contenido -->
