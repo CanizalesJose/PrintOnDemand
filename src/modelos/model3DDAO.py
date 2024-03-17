@@ -57,6 +57,8 @@ class model3DDAO():
             cursor = db.connection.cursor()
             cursor.execute("call getAllModels()")
             resultados = cursor.fetchall()
+            if resultados == ():
+                return None
             modelsList = []
             for registro in resultados:
                 modelo = Model3D(registro[0], registro[1], registro[2], registro[3], registro[4])

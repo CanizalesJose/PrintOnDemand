@@ -25,7 +25,7 @@ class UserDAO():
             cursor = db.connection.cursor()
             cursor.execute("select userName, userType, userPassword from users where userName = %s", (userName,))
             row = cursor.fetchone()
-            if row[0] != None:
+            if row != None:
                 usuario = user(row[0], row[1], row[2])
                 return usuario
         except Exception as ex:

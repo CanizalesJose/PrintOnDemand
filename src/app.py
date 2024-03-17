@@ -80,7 +80,7 @@ def catalogo():
             materialsList = ""
             for material in materials:
                 materialsList = materialsList + f"""
-                <option value="{material["materialId"]}">{material["materialName"]} ($ * {material["materialPriceModifier"]})</option>
+                <option value="{material["materialId"]}">{material["materialName"]} ($ x {material["materialPriceModifier"]})</option>
                 """
 
             catalogo = catalogo + f"""
@@ -116,48 +116,48 @@ def adminModels():
         mensaje = request.args.get('mensaje', "")
         listaModelosHTML = ""
         listaModelos = model3DDAO.getAllModels(db)
+        if listaModelos != None:
+            for modelo in listaModelos:
+                listaModelosHTML += f"""
+                <tr>
+                    <td>{modelo.getModelId()}</td>
+                    <td>{modelo.getModelName()}</td>
+                    <td><img src="{modelo.getModelImage()}" class="imgMdl"></td>
+                    <td>{modelo.getModelFile()}</td>
+                    <td>{modelo.getModelBasePrice()}</td>
+                    <td>
+                        <form action="/updateModel" method="POST">
+                            <input type="hidden" name="modelId" value="{modelo.getModelId()}">
+                            <div class="form-floating mb-1">
+                                <input type="text" class="form-control" name="updatedModelName" value="{modelo.getModelName()}">
+                                <label for="updatedModelName">Nuevo nombre</label>
+                            </div>
 
-        for modelo in listaModelos:
-            listaModelosHTML += f"""
-            <tr>
-                <td>{modelo.getModelId()}</td>
-                <td>{modelo.getModelName()}</td>
-                <td><img src="{modelo.getModelImage()}" class="imgMdl"></td>
-                <td>{modelo.getModelFile()}</td>
-                <td>{modelo.getModelBasePrice()}</td>
-                <td>
-                    <form action="/updateModel" method="POST">
-                        <input type="hidden" name="modelId" value="{modelo.getModelId()}">
-                        <div class="form-floating mb-1">
-                            <input type="text" class="form-control" name="updatedModelName" value="{modelo.getModelName()}">
-                            <label for="updatedModelName">Nuevo nombre</label>
-                        </div>
+                            <div class="form-floating mb-1">
+                                <input type="text" class="form-control" name="updatedModelImage" value="{modelo.getModelImage()}">
+                                <label for="updatedModelName">Nueva Imagen</label>
+                            </div>
 
-                        <div class="form-floating mb-1">
-                            <input type="text" class="form-control" name="updatedModelImage" value="{modelo.getModelImage()}">
-                            <label for="updatedModelName">Nueva Imagen</label>
-                        </div>
+                            <div class="form-floating mb-1">
+                                <input type="text" class="form-control" name="updatedModelFile" value="{modelo.getModelFile()}">
+                                <label for="updatedModelFile">Nuevo archivo</label>
+                            </div>
 
-                        <div class="form-floating mb-1">
-                            <input type="text" class="form-control" name="updatedModelFile" value="{modelo.getModelFile()}">
-                            <label for="updatedModelFile">Nuevo archivo</label>
-                        </div>
+                            <div class="form-floating mb-1">
+                                <input type="number" step="0.01" class="form-control" name="updatedModelBasePrice" value="{modelo.getModelBasePrice()}">
+                                <label for="updatedModelBasePrice">Nuevo precio base</label>
+                            </div>
 
-                        <div class="form-floating mb-1">
-                            <input type="number" step="0.01" class="form-control" name="updatedModelBasePrice" value="{modelo.getModelBasePrice()}">
-                            <label for="updatedModelBasePrice">Nuevo precio base</label>
-                        </div>
+                            <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este modelo?')">Modificar</button>
+                        </form>
 
-                        <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este modelo?')">Modificar</button>
-                    </form>
-
-                    <form action="/deleteModel" method="POST">
-                        <input type="hidden" name="modelId" value="{modelo.getModelId()}">
-                        <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este modelo? Se eliminaran todos las relaciones con materiales asignadas')">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-            """
+                        <form action="/deleteModel" method="POST">
+                            <input type="hidden" name="modelId" value="{modelo.getModelId()}">
+                            <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este modelo? Se eliminaran todos las relaciones con materiales asignadas')">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                """
         return render_template("auth/adminModels.html", listaModelosHTML=listaModelosHTML, mensaje=mensaje)
     else:
         return redirect('catalogo')
@@ -219,34 +219,35 @@ def adminMaterials():
         mensaje = request.args.get('mensaje', "")
         materialsList = materialDAO.getAllMaterials(db)
         materialsListHTML = ""
-        for material in materialsList:
-            materialsListHTML += f"""
-            <tr>
-                <td scope="col">{material.getMaterialId()}</td>
-                <td scope="col">{material.getMaterialName()}</td>
-                <td scope="col">x {material.getMaterialPriceModifier()}</td>
-                <td scope="col">
-                    <form action="/updateMaterial" method="POST">
-                        <input type="hidden" name="materialId" value="{material.getMaterialId()}">
-                        <div class="form-floating mb-1">
-                            <input type="text" class="form-control" placeholder="newMaterialName" name="newMaterialName" value="{material.getMaterialName()}">
-                            <label for="newMaterialName">Nuevo Nombre</label>
-                        </div>
+        if materialsList != None:
+            for material in materialsList:
+                materialsListHTML += f"""
+                <tr>
+                    <td scope="col">{material.getMaterialId()}</td>
+                    <td scope="col">{material.getMaterialName()}</td>
+                    <td scope="col">x {material.getMaterialPriceModifier()}</td>
+                    <td scope="col">
+                        <form action="/updateMaterial" method="POST">
+                            <input type="hidden" name="materialId" value="{material.getMaterialId()}">
+                            <div class="form-floating mb-1">
+                                <input type="text" class="form-control" placeholder="newMaterialName" name="newMaterialName" value="{material.getMaterialName()}">
+                                <label for="newMaterialName">Nuevo Nombre</label>
+                            </div>
 
-                        <div class="form-floating mb-1">
-                            <input type="number" step="0.01" class="form-control" name="newMaterialPriceModifier" placeholder="price" value="{material.getMaterialPriceModifier()}">
-                            <label for="newMaterialPriceModifier">Multiplicador de precio</label>
-                        </div>
+                            <div class="form-floating mb-1">
+                                <input type="number" step="0.01" class="form-control" name="newMaterialPriceModifier" placeholder="price" value="{material.getMaterialPriceModifier()}">
+                                <label for="newMaterialPriceModifier">Multiplicador de precio</label>
+                            </div>
 
-                        <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este material?')">Modificar</button>
-                    </form>
-                    <form action="/deleteMaterial" method="POST">
-                        <input type="hidden" name="materialId" value="{material.getMaterialId()}">
-                        <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este material? Se eliminarán las relaciones con modelos asignadas')">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-            """
+                            <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este material?')">Modificar</button>
+                        </form>
+                        <form action="/deleteMaterial" method="POST">
+                            <input type="hidden" name="materialId" value="{material.getMaterialId()}">
+                            <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este material? Se eliminarán las relaciones con modelos asignadas')">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                """
         return render_template("auth/adminMaterials.html", materialsListHTML=materialsListHTML, mensaje=mensaje)
     else:
         return redirect('catalogo')
@@ -263,17 +264,21 @@ def adminValidMaterials():
                 validModelsOptionsHTML += f"""
                     <option value="{modelo.getModelId()}">{modelo.getModelName()}</option>
                 """
+        else:
+            validModelsOptionsHTML = "<option value=\"nada\">No hay registros</option>"
         # Generar la lista de materiales
         materialsList = materialDAO.getAllMaterials(db)
+        materialsListHTML = ""
         if materialsList != None:
-            materialsListHTML = ""
             for material in materialsList:
                 materialsListHTML += f"""
                     <option value="{material.getMaterialId()}">{material.getMaterialName()}</option>
                 """
+        else:
+            materialsListHTML = "<option value=\"nada\">No hay registros</option>"
         # Generar la tabla con los materiales de cada modelo
         validList = validMaterialDAO.getDataValidMaterials(db)
-        
+
         if validList != None:
             validListHTML = ""
             for registro in validList:
@@ -460,7 +465,9 @@ def addValidMaterials():
         newModelKey = request.form['inputValidModel']
         newMaterialKey = request.form['inputValidMaterial']
         vinculo = validMaterial(newModelKey, newMaterialKey)
-
+        if newModelKey == "nada" or newMaterialKey == "nada":
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> No hay registros para relacionar </div>"
+            return redirect(url_for("adminValidMaterials",mensaje=mensaje))
         if validMaterialDAO.insertValidMaterial(db, vinculo) == 1:
             mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> La relación ya existe </div>"
         else:

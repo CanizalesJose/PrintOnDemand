@@ -6,6 +6,8 @@ class materialDAO():
         cursor = db.connection.cursor()
         cursor.execute("select materialId, materialName, materialPriceModifier from materials")
         resultados = cursor.fetchall()
+        if resultados == ():
+            return None
         materialsList = []
         for registro in resultados:
             materialsList.append(material(registro[0], registro[1], registro[2]))

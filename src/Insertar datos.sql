@@ -48,4 +48,4 @@ call registrarValidMaterial("model5", "material1");
 
 call registrarValidMaterial("model6", "material2");
 
-select * from models3d;
+select * from users;
