@@ -18,17 +18,17 @@
                 <form action="/addMaterial" method="POST">
                     <div class="form-floating mb-4 mx-5">
                         <input type="text" class="form-control" name="newMaterialId" placeholder="MaterialId">
-                        <label for="newMaterialId">Material Id: </label>
+                        <label>Material Id: </label>
                     </div>
 
                     <div class="form-floating mb-4 mx-5">
                         <input type="text" class="form-control" name="newMaterialName" placeholder="MaterialName">
-                        <label for="newMaterialName">Nombre del material: </label>
+                        <label>Nombre del material: </label>
                     </div>
 
                     <div class="form-floating mb-4 mx-5">
                         <input type="number" step="0.01" class="form-control" name="newMaterialPriceModifier" placeholder="PriceModifier" value="1.0">
-                        <label for="newMaterialPriceModifier">Modificador de precio del material:</label>
+                        <label>Modificador de precio del material:</label>
                     </div>
 
                     <div class="text-center">
@@ -43,20 +43,21 @@
             <!-- Tabla de contenido -->
             <div class="col-md-7 p-3 text-center">
                 <h2>Materiales</h2>
-
-                <table class="table table-hover text-center">
-                    <thead>
-                        <tr>
-                            <th scope="col">MaterialId</th>
-                            <th scope="col">Nombre del Material</th>
-                            <th scope="col">Modificador de precio</th>
-                            <th scope="col">Modificar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{materialsListHTML | safe}}
-                    </tbody>
-                </table>
+                <div class="overflow-scroll">
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col">MaterialId</th>
+                                <th scope="col">Nombre del Material</th>
+                                <th scope="col">Modificador de precio</th>
+                                <th scope="col">Modificar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{materialsListHTML | safe}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -9,29 +9,176 @@
 
 {% block contenido %}
 
-    <div class="container my-5 col-md-12 rounded shadow border border-4">
+    <div class="container my-5 col-lg-12 rounded shadow border border-4">
         <div class="row">
             <!-- Columna de formularios -->
-            <div class="col-md-5 p-3 text-center">
-                <h2>Agregar modelo al pedido</h2>
-            </div>
-            <!-- Divisor -->
-            <!-- Tabla de contenido -->
-            <div class="col-md-7 p-3 text-center">
-                <h2>Detalles</h2>
+            <div class="col-lg-5 p-3 text-center">
+                {% if current_user.is_authenticated %}
+
+                    <h2>Agregar modelo al pedido</h2>
+
+                    <form action="/addCustomModel" method="POST">
+                        <div class="form-floating mb-4 mx-5">
+                            <input type="text" class="form-control" name="modelId" placeholder="ModelId">
+                            <label>Identificador:</label>
+                        </div>
+
+                        <div class="form-floating mb-4 mx-5">
+                            <input type="text" class="form-control" name="modelName" placeholder="ModelName">
+                            <label>Nombre del modelo:</label>
+                        </div>
+
+                        <div class="form-floating mb-4 mx-5">
+                            <input type="file" class="form-control" name="modelFile" placeholder="ModelFile">
+                            <label>Archivo del modelo:</label>
+                        </div>
+
+                        <div class="form-floating mb-4 mx-5">
+                            <input type="number" step="1" value="1" class="form-control" name="modelQty" placeholder="ModelQty">
+                            <label>Cantidad:</label>
+                        </div>
+
+                        <div class="form-floating mb-4 mx-5">
+                            <select type="text" class="form-select" name="modelMaterialId" placeholder="ModelMaterial">
+                                {{materialsListHTML | safe}}
+                            </select>
+                            <label>Material de impresión:</label>
+                        </div>
+
+                        <div class="text-center mb-4 mx-5">
+                            <button type="submit" class="btn btn-success bg-gradient my-3" onclick="return confirm('¿Agregar modelo al carrito?')">Agregar Modelo</button>
+                        </div>
+                        {{mensaje | safe}}
+                    </form>
                 
+                {% else %}
+                    <h5>Iniciar sesión para agregar modelos personalizados</h5>
+                {% endif %}
+
+            </div>
+
+            <!-- Tabla de contenido -->
+            
+            <div class="col-lg-7 p-3 text-center">
+                <h2>Resumen de la compra</h2>
+
+
+                <div class="overflow-scroll">
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col">Custom</th>
+                                <th scope="col">Modelo</th>
+                                <th scope="col">Material</th>
+                                <th scope="col">Qty.</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col">Subtotal</th>
+                                <th scope="col">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- LLENAR TABLA CON EL RESUMEN DE LA COMPRA, INCLUYENDO MODELOS DEL CATALOGO Y PERSONALIZADOS -->
+                            {{listaResumenHTML | safe}}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>Total:</td>
+                                <td>$ {{totalResumen}}</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <form action="/confirmOrder" method="POST">
+                    <div class="mb-4 mx-5">
+                        <label>Ingresar dirección de entrega:</label>
+                        <textarea rows="3" class="form-control" name="orderAddress"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success bg-gradient my-3" onclick="return confirm('¿Estas seguro de realizar el pedido?')">Realizar pedido</button>
+                </form>
+
+                <form action="/clearSession" method="POST">
+                    <button type="submit" class="btn btn-danger bg-gradient my-3" onclick="return confirm('¿Estas seguro de limpiar el carrito?')">Borrar todo</button>
+                </form>
+
             </div>
         </div>
     </div>
 
-    <div class="container my-5 col-md-12 rounded shadow border border-4">
+    <div class="container my-5 col-lg-12 rounded shadow border border-4">
         <div class="row">
-            <!-- Columna de formularios -->
-            <div class="col-md-1"></div>
-            <div class="col-md-10 p-3 text-center">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-10 p-3 text-center">
                 <h2>Pedidos</h2>
+
+                {% if not current_user.is_authenticated %}
+                <!-- GENERAR UNA BÚSQUEDA CUANDO NO HAY UN USUARIO DONDE PUEDA BUSCAR UNA UNICA ORDEN -->
+                <form action="/searchOrder" method="POST">
+                    <div class="form-floating mb-4 mx-5">
+                        <input type="text" class="form-control" name="orderId" placeholder="orderId">
+                        <label>Id del pedido:</label>
+                    </div>
+
+                    <div class="text-center mb-4 mx-5">
+                        <button type="submit" class="btn btn-primary bg-gradient my-3" onclick="return confirm('¿Buscar pedido?')">Buscar Pedido</button>
+                    </div>
+                </form>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
+                
+                    <!-- AQUI SE GENERAN LAS TABLAS CON ESTE FORMATO, UNA POR CADA PEDIDO REALIZADO, SON DOS TABLAS EN TOTAL POR PEDIDO -->
+
+                    <h3 class="text-start">Id del pedido:</h3>
+                    <h5 class="text-start">Modelos del catalogo:</h5>
+                    <div class="overflow-scroll">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Model Id</th>
+                                    <th scope="col">Archivo</th>
+                                    <th scope="col">Modelo</th>
+                                    <th scope="col">Material</th>
+                                    <th scope="col">Qty.</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <br>
+                    <h5 class="text-start">Modelos Personalizados:</h5>
+                    <div class="overflow-scroll">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Modelo</th>
+                                    <th scope="col">Archivo</th>
+                                    <th scope="col">Material</th>
+                                    <th scope="col">Qty.</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% endif %}
+
             </div>
-            <div class="col-md-1"></div>
+            <div class="col-lg-1"></div>
         </div>
     </div>
 

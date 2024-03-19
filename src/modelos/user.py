@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 class user(UserMixin):
 
-    def __init__(self, userName, userType, userPassword) -> None:
+    def __init__(self, userName: str, userType: int, userPassword: str):
         self._userName = userName
         self._userType = userType
         self._userPassword = userPassword
@@ -11,21 +11,18 @@ class user(UserMixin):
     def get_id(self):
         # Devuelve el identificador único del usuario como una cadena
         return str(self._userName)
-
-    def getUserName(self):
+    
+    def getUserName(self) -> str:
         return self._userName
-
-    def setUserName(self, newUserName):
+    def setUserName(self, newUserName) -> None:
         self._userName = newUserName
 
-    def getUserType(self):
+    def getUserType(self) -> int:
         return self._userType
-
-    def setUserType(self, newUserType):
+    def setUserType(self, newUserType) -> None:
         self._userType = newUserType
 
-    def getUserPassword(self):
+    def getUserPassword(self) -> str:
         return self._userPassword
-    
-    def setUserPassword(self, newUserPassword):
+    def setUserPassword(self, newUserPassword) -> None:
         self._userPassword = newUserPassword

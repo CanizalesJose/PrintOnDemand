@@ -52,15 +52,35 @@ CREATE TABLE IF NOT EXISTS validMaterials(
     on delete cascade
 )ENGINE=INNODB;
 
-CREATE TABLE IF NOT EXISTS orderMaterials(
+CREATE TABLE IF NOT EXISTS orderModels(
     orderKey varchar(15) not null,
-    modelKey varchar(15) not null,
-    materialKey varchar(15) not null,
-    modelQuantity int,
-    primary key (orderKey, modelKey, materialKey),
-    foreign key (modelKey, materialKey) references validMaterials(modelKey, materialKey)
+    orderModelKey varchar(15) not null,
+    orderModelName varchar(255) not null,
+    orderModelFile varchar(255) not null,
+    orderModelPrice float not null,
+	orderModelQty int not null,
+    orderMaterialKey varchar(15) not null,
+    orderMaterialName varchar(255) not null,
+    orderMaterialPriceModifier float not null,
+    primary key (orderKey, orderModelKey, orderMaterialKey),
+    foreign key (orderModelKey, orderMaterialKey) references validMaterials(modelKey, materialKey)
     on delete no action
 ) ENGINE=INNODB;
+
+-- materialName, materialPriceModifier y customPrice son campos llenados de forma automatica
+CREATE TABLE IF NOT EXISTS customOrderModels(
+	orderKey varchar(15) not null,
+    customModelId varchar(15) not null,
+    customModelName varchar(255) not null,
+    customModelFile varchar(255) not null,
+    customModelPrice float not null,
+    customModelQty int not null,
+    customMaterialKey varchar(15) not null,
+    customMaterialName varchar(255) not null,
+    customMaterialPriceModifier float not null,
+    primary key (orderKey, customModelId, customMaterialKey),
+    foreign key (customMaterialKey) references materials(materialId) on delete no action
+);
 
 -- Creación de procedimientos
 
@@ -153,4 +173,24 @@ DELIMITER //
     BEGIN
 		delete from users where userName = deletedUsername;
     END //
+    
+    CREATE PROCEDURE insertOrderWithUser(IN newId varchar(15), IN newDate datetime, IN newTotal float, IN newUser varchar(100), IN newAddress varchar(255))
+    BEGIN
+		insert into orders (orderId, orderDate, orderTotalCost, orderUser, orderAddress) values (newId, newDate, newTotal, newUser, newAddress);
+    END //
+    
+    CREATE PROCEDURE insertOrderNoUser(IN newId varchar(15), IN newDate datetime, IN newTotal float, IN newAddress varchar(255))
+    BEGIN
+		insert into orders (orderId, orderDate, orderTotalCost, orderAddress) values (newId, newDate, newTotal, newAddress);
+    END //
+    
+    CREATE PROCEDURE insertModelOrder(IN newOrderKey varchar(15), IN newModelKey varchar(15), IN newModelName varchar(255), IN newModelFile varchar(255), IN newModelPrice float, IN newModelQty int, IN newMaterialKey varchar(15), IN newMaterialName varchar(255), IN newMaterialModifier float)
+    BEGIN
+		insert into ordermodels values (newOrderKey, newModelKey, newModelName, newModelFile, newModelPrice, newModelQty, newMaterialKey, newMaterialName, newMaterialModifier);
+    END//
+    
+    CREATE PROCEDURE insertCustomModelOrder(IN newOrderKey varchar(15), IN newModelKey varchar(15), IN newModelName varchar(255), IN newModelFile varchar(255), IN newModelPrice float, IN newModelQty int, IN newMaterialKey varchar(15), IN newMaterialName varchar(255), IN newMaterialModifier float)
+    BEGIN
+		insert into customordermodels values (newOrderKey, newModelKey, newModelName, newModelFile, newModelPrice, newModelQty, newMaterialKey, newMaterialName, newMaterialModifier);
+    END//
 DELIMITER ;

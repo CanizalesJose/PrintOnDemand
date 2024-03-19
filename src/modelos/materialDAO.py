@@ -65,3 +65,18 @@ class materialDAO():
             raise Exception(ex)
         finally:
             cursor.close()
+        
+    @classmethod
+    def getMaterialData(self, db, materialId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select materialName, materialPriceModifier from materials where materialId = %s", (materialId, ))
+            consulta = cursor.fetchone()
+            if consulta == None:
+                return 1
+            else:
+                return material(materialId, consulta[0], consulta[1])
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            db.connection.cursor().close()

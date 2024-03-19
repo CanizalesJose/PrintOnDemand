@@ -27,11 +27,9 @@
                 <a class="nav-link active text-light fs-5" aria-current="page" href="{{url_for('catalogo')}}">Catalogo</a>
               </li>
 
-              {% if current_user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link active text-light fs-5" aria-current="page" href="{{url_for('pedidosPersonalizados')}}">Realizar Pedido</a>
                 </li>
-              {% endif %}
 
               {% if current_user.is_authenticated %}
                 {% if current_user.getUserType() == 1%}

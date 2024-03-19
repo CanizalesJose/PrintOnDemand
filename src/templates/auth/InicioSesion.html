@@ -22,7 +22,12 @@
               <li class="nav-item">
                 <a class="nav-link active text-light fs-5" aria-current="page" href="{{url_for('catalogo')}}">Catalogo</a>
               </li>
+
+              <li class="nav-item">
+                <a class="nav-link active text-light fs-5" aria-current="page" href="{{url_for('pedidosPersonalizados')}}">Realizar Pedido</a>
+              </li>
             </ul>
+            
 
           </div>
         </div>
@@ -33,13 +38,13 @@
         <!-- Nombre de usuario -->
         <div class="form-floating mb-4">
           <input type="text"  name="username" class="form-control border-2 border-black" placeholder="Username">
-          <label class="form-label" for="user">Usuario</label>
+          <label class="form-label">Usuario</label>
             
         </div>
         <!-- Contraseña -->
         <div class="form-floating mb-4">
             <input type="password" name="password" class="form-control border-2 border-black" placeholder="Password">
-            <label class="form-label" for="pass">Contraseña</label>
+            <label class="form-label">Contraseña</label>
         </div>
 
         <!-- Mensaje de advertencia -->

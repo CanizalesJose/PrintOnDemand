@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from functools import wraps
 from config.config import config
-import json
+import random
 from modelos.model3D import Model3D
 from modelos.model3DDAO import model3DDAO
 from modelos.user import user
@@ -14,6 +14,8 @@ from modelos.material import material
 from modelos.materialDAO import materialDAO
 from modelos.validMaterial import validMaterial
 from modelos.validMaterialDAO import validMaterialDAO
+from modelos.orderModel import orderModel
+from modelos.orderModelDAO import orderModelDAO
 
 
 # Crear instancias
@@ -40,6 +42,7 @@ def admin_required(func):
 def logout():
     if current_user.is_authenticated:
         logout_user()
+    session.clear()
     return redirect(url_for("iniciarSesion"))
 
 
@@ -69,6 +72,7 @@ def iniciarSesion():
 @app.route("/catalogo")
 def catalogo():
 
+    mensaje = request.args.get('mensaje', "")
     catalogo = ""
     # Recorre cada modelo
     for elemento in model3DDAO.showAllModelId(db):
@@ -84,31 +88,39 @@ def catalogo():
                 """
 
             catalogo = catalogo + f"""
-             <div class="col-md-3 my-4">
+             <div class="col-lg-3 my-4">
                     <div class="card text-dark rounded">
                         <img src="{validModel[2]}" class="card-img-top imgArticulo" alt="Producto {validModel[0]}">
                         <div class="card-body">
                             <h5 class="card-title">{validModel[1]}</h5>
-                            <p class="card-text">${validModel[4]}
-                            <br>
-                            <form id="catalogoForm{validModel[0]}">
-                                Cantidad: <input type="number" class="cantidad" id="cantidadProducto{validModel[0]}" value="1">
-                                </p>
-                                <label>Seleccionar material: </label>
-                                <select class="form-select" aria-label="Seleccion de material" id="tipoProducto{validModel[0]}">
-                                    {materialsList}
-                                </select>
-                                <br>
+                            <p class="card-text">$ {validModel[4]}</p>
+
+                            <form action="/addOrderModel" method="POST">
+                                <input type="text" class="form-control" name="modelId" value="{validModel[0]}" hidden>
+
+                                <div class="form-floating mb-3 mx-5">
+                                    <input type="number" class="form-control" name="modelQty" placeholder="Cantidad" value="1">
+                                    <label>Cantidad:</label>
+                                </div>
+
+                                <div class="form-floating mb-3 mx-5">
+                                    <select class="form-select" name="modelMaterialId">
+                                        {materialsList}
+                                    </select>
+                                    <label>Seleccionar material: </label>
+                                </div>
+
                                 <div class="text-center">
-                                    <button type="button" class="btn btn-primary agregar" id="button{validModel[0]}">Agregar al carrito</button>
+                                    <button type="submit" class="btn btn-primary agregar">Agregar al carrito</button>
                                 </div>
                             </form>
+
                         </div>
                     </div>
                 </div>
                 
             """
-    return render_template("auth/catalogo.html", catalogo=catalogo)
+    return render_template("auth/catalogo.html", catalogo=catalogo, mensaje=mensaje)
 
 @app.route("/adminModels")
 def adminModels():
@@ -130,22 +142,22 @@ def adminModels():
                             <input type="hidden" name="modelId" value="{modelo.getModelId()}">
                             <div class="form-floating mb-1">
                                 <input type="text" class="form-control" name="updatedModelName" value="{modelo.getModelName()}">
-                                <label for="updatedModelName">Nuevo nombre</label>
+                                <label>Nuevo nombre</label>
                             </div>
 
                             <div class="form-floating mb-1">
                                 <input type="text" class="form-control" name="updatedModelImage" value="{modelo.getModelImage()}">
-                                <label for="updatedModelName">Nueva Imagen</label>
+                                <label>Nueva Imagen</label>
                             </div>
 
                             <div class="form-floating mb-1">
                                 <input type="text" class="form-control" name="updatedModelFile" value="{modelo.getModelFile()}">
-                                <label for="updatedModelFile">Nuevo archivo</label>
+                                <label>Nuevo archivo</label>
                             </div>
 
                             <div class="form-floating mb-1">
                                 <input type="number" step="0.01" class="form-control" name="updatedModelBasePrice" value="{modelo.getModelBasePrice()}">
-                                <label for="updatedModelBasePrice">Nuevo precio base</label>
+                                <label>Nuevo precio base</label>
                             </div>
 
                             <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este modelo?')">Modificar</button>
@@ -188,14 +200,14 @@ def adminUsers():
 
                         <div class="form-floating mb-1">
                             <input type="text" class="form-control" name="newUsername" value="{registro['usuario'].getUserName()}">
-                            <label for="newUsername">Nuevo nombre</label>
+                            <label>Nuevo nombre</label>
                         </div>
                         
                         <div class="form-floating mb-1">
                             <select class="form-select" aria-label="Seleccion de tipo" name="newUserType" placeholder="newUserType">
                                 {userTypesListHTML}
                             </select>
-                            <label for="newUserType">Tipo de usuario</label>
+                            <label>Tipo de usuario</label>
                         </div>
 
                         <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estas seguro de modificar este usuario?')">Modificar</button>
@@ -231,12 +243,12 @@ def adminMaterials():
                             <input type="hidden" name="materialId" value="{material.getMaterialId()}">
                             <div class="form-floating mb-1">
                                 <input type="text" class="form-control" placeholder="newMaterialName" name="newMaterialName" value="{material.getMaterialName()}">
-                                <label for="newMaterialName">Nuevo Nombre</label>
+                                <label>Nuevo Nombre</label>
                             </div>
 
                             <div class="form-floating mb-1">
                                 <input type="number" step="0.01" class="form-control" name="newMaterialPriceModifier" placeholder="price" value="{material.getMaterialPriceModifier()}">
-                                <label for="newMaterialPriceModifier">Multiplicador de precio</label>
+                                <label>Multiplicador de precio</label>
                             </div>
 
                             <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este material?')">Modificar</button>
@@ -301,14 +313,56 @@ def adminValidMaterials():
     else:
         return redirect('catalogo')
 
-@app.route("/pedidos")
+@app.route("/pedidosPersonalizados")
 def pedidosPersonalizados():
-    if current_user.is_authenticated:
-        return render_template("auth/realizarPedidos.html")
+    mensaje = request.args.get('mensaje', "")
+    materialsListHTML =""
+    listaResumenHTML = ""
+    totalResumen = 0
+    # Generar lista de materiales
+    materialsList = materialDAO.getAllMaterials(db)
+    if materialsList != None:
+        for material in materialsList:
+            materialsListHTML += f"""
+                <option value="{material.getMaterialId()}">{material.getMaterialName()} ($ x {material.getMaterialPriceModifier()})</option>
+            """
     else:
-        return redirect(url_for('catalogo'))
+        materialsListHTML = "<option value=\"nada\">No hay registros</option>"
+    
+    # Recuperar el carrito o crearlo
+    username = ""
+    if current_user.is_authenticated:
+        username = current_user.getUserName()
+    if f'carrito{username}' not in session:
+        session[f'carrito{username}'] = []
+    carrito = session[f'carrito{username}']
+
+    # CONSTRUIR LA TABLA PARA DETALLES DE LA COMPRA
+    for registro in carrito:
+        totalResumen += int(registro['modelQty'])*float(registro['modelPrice'])*float(registro['materialPriceModifier'])
+        listaResumenHTML += f"""
+            <tr>
+                <td>{registro['isCustom']}</td>
+                <td>{registro['modelName']}</td>
+                <td>{registro['materialName']} ($ x {registro['materialPriceModifier']})</td>
+                <td>{registro['modelQty']}</td>
+                <td>{registro['modelPrice']}</td>
+                <td>{round(int(registro['modelQty'])*float(registro['modelPrice'])*float(registro['materialPriceModifier']), 2)}</td>
+                <td>
+                    <form action="/deleteFromOrder" method="POST">
+                        <input name="modelKey" value="{registro['modelKey']}" hidden>
+                        <input name="materialKey" value="{registro['materialKey']}" hidden>
+                        <button type="submit" class="btn btn-danger bg-gradient my-3" onclick="return confirm('¿Estas seguro de eliminar modelo del carrito?')">Eliminar</button>
+                    </form>
+                </td>
+            <tr>
+        """
+    totalResumen = round(totalResumen, 2)
+    return render_template("auth/realizarPedidos.html", mensaje=mensaje, materialsListHTML=materialsListHTML, listaResumenHTML=listaResumenHTML, totalResumen=totalResumen)
 
 
+# ----------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # Comienzan los métodos POST, para administrar los registros
 
@@ -573,6 +627,172 @@ def deleteUser():
     else:
         mensaje = ""
         return redirect(url_for("adminUsers", mensaje=mensaje))
+    
+# AGREGAR ELEMENTO DEL CATALOGO
+@app.route("/addOrderModel", methods=["GET", "POST"])
+def addOrderModel():
+    if request.method == "POST":
+        # Separar el carrito sin cuenta del anónimo
+        username = ""
+        if current_user.is_authenticated:
+            username = current_user.getUserName()
+        if f'carrito{username}' not in session:
+            session[f'carrito{username}'] = []
+        # Obtener el carrito para el usuario
+        carrito = session[f'carrito{username}']
+
+        mensaje = ""
+        
+        isCustom = False
+        modelQty = request.form['modelQty']
+        try:
+            # Asegurar que la cantidad no este vacía
+            modelQty = int(request.form['modelQty'])
+            if modelQty < 1:
+                raise Exception(ex)
+        except Exception as ex:
+            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al agregar... </div>"
+            return redirect(url_for("catalogo", mensaje = mensaje))
+
+        modelID = request.form['modelId']
+        modelo = model3DDAO.getModelData(db, modelID)
+        materialId = request.form['modelMaterialId']
+        material = materialDAO.getMaterialData(db, materialId)
+
+        newOrderModel = orderModel(isCustom, modelo.getModelId(), modelo.getModelName(), modelo.getModelFile(), modelo.getModelBasePrice(), modelQty, material.getMaterialId(), material.getMaterialName(), material.getMaterialPriceModifier())
+
+        for model in carrito:
+            if model['modelKey'] == newOrderModel.getModelKey() and model['materialKey'] == newOrderModel.getMaterialKey():
+                model['modelQty'] = int(model['modelQty']) + int(newOrderModel.getModelQty())
+                break
+        else:
+            carrito.append(newOrderModel.toDict())
+            
+        session[f'carrito{username}'] = carrito
+
+        return redirect(url_for("catalogo"))
+    else:
+        return redirect(url_for("catalogo"))
+    
+@app.route("/addCustomModel", methods=["GET", "POST"])
+def addCustomModel():
+    if request.method == "POST":
+        # Separar el carrito sin cuenta del anónimo
+        username = ""
+        if current_user.is_authenticated:
+            username = current_user.getUserName()
+        if f'carrito{username}' not in session:
+            session[f'carrito{username}'] = []
+        # Obtener el carrito para el usuario
+        carrito = session[f'carrito{username}']
+        mensaje = ""
+
+        modelId = request.form['modelId']
+        modelName = request.form['modelName']
+        modelFile = request.form['modelFile']
+        modelQty = request.form['modelQty']
+        modelMaterialId = request.form['modelMaterialId']
+        modelPrice = round(random.uniform(3,15), 2)
+        isCustom = True
+        
+        # VALIDACIONES DE CAMPOS
+        if len(modelId) == 0:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede estar vacío... </div>"
+        if len(modelId) > 15:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede ser mayor a 15 caracteres... </div>"
+        if len(modelName) == 0:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío... </div>"
+        if len(modelName) > 255:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede ser mayor a 255 caracteres... </div>"
+        if len(modelFile) == 0:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede estar vacío... </div>"
+        if len(modelFile) > 255:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede ser mayor a 255 caracteres... </div>"
+        if modelMaterialId == "nada":
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> No hay materiales para asignar... </div>"
+        if model3DDAO.getModelData(db, modelId) != 1:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El identificador ya esta ocupado... </div>"
+
+        try:
+            if int(request.form['modelQty']) < 1:
+                raise Exception(ex)
+        except Exception as ex:
+            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> Se debe agregar una cantidad valida... </div>"
+            return redirect(url_for('pedidosPersonalizados', mensaje=mensaje))
+        if mensaje != "":
+            return redirect(url_for('pedidosPersonalizados', mensaje=mensaje))
+        else:
+            # AGREGAR AL CARRITO
+            material = materialDAO.getMaterialData(db, modelMaterialId)
+            newOrderModel = orderModel(isCustom, modelId, modelName, modelFile, modelPrice, modelQty, modelMaterialId, material.getMaterialName(), material.getMaterialPriceModifier())
+
+            for model in carrito:
+                if model['modelKey'] == newOrderModel.getModelKey() and model['materialKey'] == newOrderModel.getMaterialKey():
+                    model['modelQty'] = int(model['modelQty']) + int(newOrderModel.getModelQty())
+                    mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Como el modelo ya estaba en carrito, se ha sumado su cantidad... </div>"
+                    break
+            else:
+                carrito.append(newOrderModel.toDict())
+            mensaje += "<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado al carrito! </div>"
+            session[f'carrito{username}'] = carrito
+            return redirect(url_for('pedidosPersonalizados', mensaje=mensaje))
+    else:
+        return redirect(url_for('pedidosPersonalizados'))
+    
+@app.route("/clearSession", methods=["GET", "POST"])
+def clearSession():
+    username = ""
+    if current_user.is_authenticated:
+        username = current_user.getUserName()
+        session[f'carrito{username}'] = []
+    else:
+        session.clear()
+    return redirect(url_for('pedidosPersonalizados'))
+
+@app.route("/deleteFromOrder", methods=["GET", "POST"])
+def deleteFromOrder():
+    if request.method == "POST":
+        username = ""
+        if current_user.is_authenticated:
+            username = current_user.getUserName()
+        if f'carrito{username}' not in session:
+            redirect(url_for('pedidosPersonalizados'))
+
+        # Obtener el carrito para el usuario
+        carrito = session[f'carrito{username}']
+        modelKey = request.form['modelKey']
+        materialKey = request.form['materialKey']
+
+        for index, elemento in enumerate(carrito):
+            if elemento['modelKey'] == modelKey and elemento['materialKey'] == materialKey:
+                carrito.pop(index)
+                break
+        session[f'carrito{username}'] = carrito
+        return redirect(url_for('pedidosPersonalizados'))
+    else:
+        return redirect(url_for('pedidosPersonalizados'))
+
+@app.route("/confirmOrder", methods=["GET", "POST"])
+def confirmOrder():
+    if request.method == "POST":
+        username = ""
+        if current_user.is_authenticated:
+            username = current_user.getUserName()
+        if f'carrito{username}' not in session:
+            redirect(url_for('pedidosPersonalizados'))
+        carrito = session[f'carrito{username}']
+
+        if username == "":
+            username = None
+
+        if len(request.form['orderAddress']) != 0:
+            orderModelDAO.confirmOrder(db, carrito, username, request.form['orderAddress'])
+            if username == None:
+                username = ""
+            session[f'carrito{username}'] = []
+        return redirect(url_for('pedidosPersonalizados'))
+    else:
+        return redirect(url_for('pedidosPersonalizados'))
 
 # En caso de ingresar una ruta que no existe
 @app.errorhandler(404)

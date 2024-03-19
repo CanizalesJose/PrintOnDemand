@@ -121,3 +121,18 @@ class model3DDAO():
             raise Exception(ex)
         finally:
             cursor.close()
+    
+    @classmethod
+    def getModelData(self, db, modelId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute("select modelName, modelFile, modelBasePrice from models3D where modelId = %s", (modelId, ))
+            consulta = cursor.fetchone()
+            if consulta == None:
+                return 1
+            else:
+                return Model3D(modelId, consulta[0], "", consulta[1], float(consulta[2]))
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            db.connection.cursor().close()

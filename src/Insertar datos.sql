@@ -1,12 +1,17 @@
 use PrintOnDemand;
 
+delete from ordermodels;
 delete from validmaterials;
-delete from ordermaterials;
+delete from customordermodels;
 delete from users;
 delete from materials;
 delete from models3d;
 delete from orders;
 delete from usertypes;
+
+INSERT INTO userTypes VALUES (1, "Administrador"), (2, "Usuario Cliente");
+call registrarUser("admin", "123", 1);
+call registrarUser("client", "123", 2);
 
 call registrarModelo("model1", "ArticulatedWhaleShark", "https://cdn.thingiverse.com/assets/d9/91/d7/44/d5/large_display_5939294b-57ab-4709-a2e5-3182f29fa89e.png", "ArticulatedWhaleShark.stl", 10.99);
 call registrarModelo('model2', 'Cabinet Door Organizer', 'https://cdn.thingiverse.com/assets/8a/96/8b/7a/3b/large_display_707af456-9de0-4a2c-9e8a-1e7780eeef75.png', 'Cabinet_Door_Organizer_5.stl', 12.99);
@@ -18,11 +23,6 @@ call registrarModelo('model7', 'Saturn V - Desktop Rocket', 'https://cdn.thingiv
 call registrarModelo('model8', 'A-10 Warthog', 'https://cdn.thingiverse.com/assets/f5/71/5c/fc/64/large_display_0339506b-8ccc-429b-8ea7-64aef7bedbdc.png', 'A-10_Warthog.stl', 13.99);
 call registrarModelo('model9', 'Window for Dollhouse', 'https://cdn.thingiverse.com/assets/f4/69/fb/f5/de/large_display_0c2a8d5f-e793-43c6-ab9b-f8436656e649.png', 'Part_Studio_1.stl', 7.99);
 call registrarModelo('model10', 'Rejilla ventilador', 'https://cdn.thingiverse.com/assets/67/c9/2a/2c/6c/large_display_8c03cb80-8a62-4c27-b35e-9e7d5ac9470d.png', 'rejilla_vent2.stl', 16.9);
-
-INSERT INTO userTypes VALUES (1, "Administrador"), (2, "Usuario Cliente");
-
-call registrarUser("admin", "123", 1);
-call registrarUser("client", "123", 2);
 
 call registrarMaterial("material1", "PLA", 1);
 call registrarMaterial("material2", "ABS", 1.2);
@@ -48,4 +48,6 @@ call registrarValidMaterial("model5", "material1");
 
 call registrarValidMaterial("model6", "material2");
 
-select * from users;
+select * from orders;
+select * from customordermodels;
+select * from ordermodels;
