@@ -362,7 +362,7 @@ def pedidosPersonalizados():
         for pedido in orderList:
             orderListHTML += f"""
                 <h3 class="text-start">Id del pedido: {pedido.getOrderId()}</h3>
-                <h6 class="text-start">Fecha del pedido {pedido.getOrderDate()}:</h6>
+                <h6 class="text-start">Fecha del pedido: {pedido.getOrderDate()}</h6>
                 <h5 class="text-start">Modelos del catalogo:</h5>
                 <div class="overflow-scroll">
                         <table class="table table-hover text-center">
