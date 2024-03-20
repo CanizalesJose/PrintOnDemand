@@ -36,6 +36,7 @@ class orderModelDAO():
                     cursor.execute("call insertCustomModelOrder(%s, %s, %s, %s, %s, %s, %s, %s, %s)", (orderId, registro['modelKey'], registro['modelName'], registro['modelFile'], registro['modelPrice'], registro['modelQty'], registro['materialKey'], registro['materialName'], registro['materialPriceModifier']))
             
             db.connection.commit()
+            return orderId
 
         except Exception as ex:
             db.connection.rollback()

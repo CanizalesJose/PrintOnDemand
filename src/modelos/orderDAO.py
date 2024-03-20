@@ -76,3 +76,13 @@ class orderDAO():
             raise Exception(ex)
         finally:
             db.connection.cursor().close()
+
+    @classmethod
+    def getOrderFromId(self, db, orderId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute('select orderId, orderDate, orderTotalCost, orderUser, orderAddress from orders where orderId = %s', (orderId, ))
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            db.connection.cursor().close()

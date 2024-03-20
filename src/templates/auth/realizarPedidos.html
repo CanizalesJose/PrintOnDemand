@@ -48,20 +48,21 @@
                         <div class="text-center mb-4 mx-5">
                             <button type="submit" class="btn btn-success bg-gradient my-3" onclick="return confirm('¿Agregar modelo al carrito?')">Agregar Modelo</button>
                         </div>
-                        <div>
-                            {% with messages = get_flashed_messages() %}
-                                {% if messages %}
-                                    {% for message in messages %}
-                                    {{message | safe}}
-                                    {% endfor %}
-                                {% endif %}
-                            {% endwith %}
-                        </div>
                     </form>
                 
                 {% else %}
                     <h5>Iniciar sesión para agregar modelos personalizados</h5>
                 {% endif %}
+
+                <div>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                            {{message | safe}}
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
 
             </div>
 

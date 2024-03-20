@@ -874,8 +874,8 @@ def confirmOrder():
             username = None
 
         if len(request.form['orderAddress']) != 0:
-            orderModelDAO.confirmOrder(db, carrito, username, request.form['orderAddress'])
-            flash('<p class="alert alert-success"> Pedido confirmado! </p>')
+            orderId = orderModelDAO.confirmOrder(db, carrito, username, request.form['orderAddress'])
+            flash(f'<p class="alert alert-success"> Pedido confirmado!<br>Tu ID de pedido es: {orderId}<br>Si no posee una cuenta es importante que guarde este Id para consultar su pedido</p>')
             if username == None:
                 username = ""
             session[f'carrito{username}'] = []
