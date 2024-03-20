@@ -18,18 +18,18 @@ Los usuarios que no ingresen con una cuenta pueden:
 ### Guia de instalación
 Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server instalado y configurado.
 - Dentro de un CMD, ingresar la siguiente secuencia de comandos dentro de la carpeta del proyecto.
-
+```
     python -m venv env
     env\Scripts\activate
     pip install -r requirements.txt
     deactivate
     mysql -u root -p
     [contraseña]
-    source DataBase.sql
-    source InsertarDatos.sql
+    source src\DataBase.sql
+    source src\InsertarDatos.sql
     exit
     env\Scripts\activate
     python src\app.py
-
+```
 Esto es en caso de ser primera instalación.
 A partir de aqui, el servidor puede iniciarse al activar el entorno virtual y ejecutar `app.py`.
