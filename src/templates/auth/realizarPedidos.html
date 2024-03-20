@@ -48,7 +48,15 @@
                         <div class="text-center mb-4 mx-5">
                             <button type="submit" class="btn btn-success bg-gradient my-3" onclick="return confirm('¿Agregar modelo al carrito?')">Agregar Modelo</button>
                         </div>
-                        {{mensaje | safe}}
+                        <div>
+                            {% with messages = get_flashed_messages() %}
+                                {% if messages %}
+                                    {% for message in messages %}
+                                    {{message | safe}}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
                     </form>
                 
                 {% else %}
@@ -133,47 +141,7 @@
                 {% if current_user.is_authenticated %}
                 
                     <!-- AQUI SE GENERAN LAS TABLAS CON ESTE FORMATO, UNA POR CADA PEDIDO REALIZADO, SON DOS TABLAS EN TOTAL POR PEDIDO -->
-
-                    <h3 class="text-start">Id del pedido:</h3>
-                    <h5 class="text-start">Modelos del catalogo:</h5>
-                    <div class="overflow-scroll">
-                        <table class="table table-hover text-center">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Model Id</th>
-                                    <th scope="col">Archivo</th>
-                                    <th scope="col">Modelo</th>
-                                    <th scope="col">Material</th>
-                                    <th scope="col">Qty.</th>
-                                    <th scope="col">Precio</th>
-                                    <th scope="col">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <br>
-                    <h5 class="text-start">Modelos Personalizados:</h5>
-                    <div class="overflow-scroll">
-                        <table class="table table-hover text-center">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Modelo</th>
-                                    <th scope="col">Archivo</th>
-                                    <th scope="col">Material</th>
-                                    <th scope="col">Qty.</th>
-                                    <th scope="col">Precio</th>
-                                    <th scope="col">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                
-                            </tbody>
-                        </table>
-                    </div>
+                    {{orderListHTML | safe}}
 
                     {% endif %}
 

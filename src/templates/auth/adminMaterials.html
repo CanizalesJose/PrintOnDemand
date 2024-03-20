@@ -35,7 +35,15 @@
                         <button type="submit" class="btn btn-success bg-gradient my-3" onclick="return confirm('¿Estás seguro de agregar este material?')">Agregar Material</button>
                     </div>
 
-                    {{mensaje | safe}}
+                    <div>
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                {% for message in messages %}
+                                {{message | safe}}
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
 
                 </form>
             </div>

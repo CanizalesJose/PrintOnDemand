@@ -13,7 +13,15 @@
     <div class="container my-5 col-md-12">
         <div class="row text-center shadow rounded border border-5">
             <h2 class="text-dark mt-2">Catalogo</h2>
-            {{mensaje | safe}}
+            <div>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                        {{message | safe}}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
             <br><br>
             <div class="container col-md-12 rounded text-dark shadow border-5 mb-3 justify-content-center" id="catalogoCard">
 

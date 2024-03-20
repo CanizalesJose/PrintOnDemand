@@ -34,7 +34,15 @@
                     <div class="text-center">
                         <button type="submit" class="btn btn-success bg-gradient my-3" id="botonAgregarValidMaterial" onclick="return confirm('¿Estás seguro de asignar material a modelo?')">Vincular Modelo-Material</button>
                     </div>
-                    {{mensaje | safe}}
+                    <div>
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                {% for message in messages %}
+                                {{message | safe}}
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
                 </form>
 
             </div>

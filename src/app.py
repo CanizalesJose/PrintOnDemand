@@ -16,6 +16,8 @@ from modelos.validMaterial import validMaterial
 from modelos.validMaterialDAO import validMaterialDAO
 from modelos.orderModel import orderModel
 from modelos.orderModelDAO import orderModelDAO
+from modelos.order import order
+from modelos.orderDAO import orderDAO
 
 
 # Crear instancias
@@ -58,12 +60,12 @@ def iniciarSesion():
             login_user(logged_user)
             return redirect(url_for('catalogo'))
         else:
-            mensaje = """
+            flash("""
             <div class="alert alert-danger" role="alert">
                 Usuario o contraseña incorrectos...
             </div>
-            """
-            return render_template('auth/InicioSesion.html', mensaje=mensaje)
+            """)
+            return render_template('auth/InicioSesion.html')
     else:
         if current_user.is_authenticated:
             return redirect(url_for('catalogo'))
@@ -72,7 +74,6 @@ def iniciarSesion():
 @app.route("/catalogo")
 def catalogo():
 
-    mensaje = request.args.get('mensaje', "")
     catalogo = ""
     # Recorre cada modelo
     for elemento in model3DDAO.showAllModelId(db):
@@ -120,12 +121,11 @@ def catalogo():
                 </div>
                 
             """
-    return render_template("auth/catalogo.html", catalogo=catalogo, mensaje=mensaje)
+    return render_template("auth/catalogo.html", catalogo=catalogo)
 
 @app.route("/adminModels")
 def adminModels():
     if current_user.is_authenticated and current_user.getUserType() == 1:
-        mensaje = request.args.get('mensaje', "")
         listaModelosHTML = ""
         listaModelos = model3DDAO.getAllModels(db)
         if listaModelos != None:
@@ -170,14 +170,13 @@ def adminModels():
                     </td>
                 </tr>
                 """
-        return render_template("auth/adminModels.html", listaModelosHTML=listaModelosHTML, mensaje=mensaje)
+        return render_template("auth/adminModels.html", listaModelosHTML=listaModelosHTML)
     else:
         return redirect('catalogo')
 
 @app.route("/adminUsers")
 def adminUsers():
     if current_user.is_authenticated and current_user.getUserType() == 1:
-        mensaje = request.args.get('mensaje', "")
         # Genera los tipos de usuarios y los agrega a las opciones
         userTypesListHTML = ""
         userTypesList = userTypeDAO.getUserTypes(db)
@@ -221,14 +220,13 @@ def adminUsers():
             </tr>
             """
         
-        return render_template("auth/adminUsers.html", userTypesListHTML=userTypesListHTML, userListHTML=userListHTML, mensaje=mensaje)
+        return render_template("auth/adminUsers.html", userTypesListHTML=userTypesListHTML, userListHTML=userListHTML)
     else:
         return redirect('catalogo')
 
 @app.route("/adminMaterials")
 def adminMaterials():
     if current_user.is_authenticated and current_user.getUserType() == 1:
-        mensaje = request.args.get('mensaje', "")
         materialsList = materialDAO.getAllMaterials(db)
         materialsListHTML = ""
         if materialsList != None:
@@ -260,14 +258,13 @@ def adminMaterials():
                     </td>
                 </tr>
                 """
-        return render_template("auth/adminMaterials.html", materialsListHTML=materialsListHTML, mensaje=mensaje)
+        return render_template("auth/adminMaterials.html", materialsListHTML=materialsListHTML)
     else:
         return redirect('catalogo')
 
 @app.route("/adminValidMaterials")
 def adminValidMaterials():
     if current_user.is_authenticated and current_user.getUserType() == 1:
-        mensaje = request.args.get('mensaje', "")
         # Generar lista de modelos validos
         validModels = model3DDAO.getAllModels(db)
         validModelsOptionsHTML = ""
@@ -309,13 +306,12 @@ def adminValidMaterials():
                     </tr>
                 """
 
-        return render_template("auth/adminValidMaterials.html", validModelsOptionsHTML=validModelsOptionsHTML, materialsListHTML=materialsListHTML, validListHTML=validListHTML, mensaje=mensaje)
+        return render_template("auth/adminValidMaterials.html", validModelsOptionsHTML=validModelsOptionsHTML, materialsListHTML=materialsListHTML, validListHTML=validListHTML)
     else:
         return redirect('catalogo')
 
 @app.route("/pedidosPersonalizados")
 def pedidosPersonalizados():
-    mensaje = request.args.get('mensaje', "")
     materialsListHTML =""
     listaResumenHTML = ""
     totalResumen = 0
@@ -358,7 +354,88 @@ def pedidosPersonalizados():
             <tr>
         """
     totalResumen = round(totalResumen, 2)
-    return render_template("auth/realizarPedidos.html", mensaje=mensaje, materialsListHTML=materialsListHTML, listaResumenHTML=listaResumenHTML, totalResumen=totalResumen)
+
+    # CONSTRUIR LISTA DE PEDIDOS REALIZADOS SI ESTA REGISTRADO
+    if current_user.is_authenticated:
+        orderList = orderDAO.getOrderWithUser(db,current_user.getUserName())
+        orderListHTML = ""
+        for pedido in orderList:
+            orderListHTML += f"""
+                <h3 class="text-start">Id del pedido: {pedido.getOrderId()}</h3>
+                <h6 class="text-start">Fecha del pedido {pedido.getOrderDate()}:</h6>
+                <h5 class="text-start">Modelos del catalogo:</h5>
+                <div class="overflow-scroll">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Model Id</th>
+                                    <th scope="col">Archivo</th>
+                                    <th scope="col">Modelo</th>
+                                    <th scope="col">Material</th>
+                                    <th scope="col">Qty.</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            """
+            for modelo in orderDAO.getModelsWithUser(db, current_user.getUserName(), pedido.getOrderId()):
+                orderListHTML += f"""
+                    <tr>
+                        <td>{modelo['modelKey']}</td>
+                        <td>{modelo['modelFile']}</td>
+                        <td>{modelo['modelName']}</td>
+                        <td>{modelo['materialName']}</td>
+                        <td>{modelo['modelQty']}</td>
+                        <td>{modelo['modelPrice']}</td>
+                        <td>{modelo['subtotal']}</td>
+                    </tr>
+                """
+            
+            orderListHTML += f"""
+                </tbody>
+                    </table>
+                </div>
+                <br>
+                <h5 class="text-start">Modelos Personalizados:</h5>
+                    <div class="overflow-scroll">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Modelo</th>
+                                    <th scope="col">Archivo</th>
+                                    <th scope="col">Material</th>
+                                    <th scope="col">Qty.</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            """
+            # Generar custom models table
+            for modelo in orderDAO.getCustomModelsWithUser(db, current_user.getUserName(), pedido.getOrderId()):
+                orderListHTML += f"""
+                    <tr>
+                        <td>{modelo['modelKey']}</td>
+                        <td>{modelo['modelFile']}</td>
+                        <td>{modelo['modelName']}</td>
+                        <td>{modelo['materialName']}</td>
+                        <td>{modelo['modelQty']}</td>
+                        <td>{modelo['modelPrice']}</td>
+                        <td>{modelo['subtotal']}</td>
+                    </tr>
+                """
+            orderListHTML += f"""
+                        </tbody>
+                    </table>
+                </div>
+                <h6 class="text-end">Total: $ {pedido.getOrderTotalCost()}<h6>
+                <h6 class="text-start">Dirección de entrega: {pedido.getOrderAddress()}</h6>
+                <hr>
+            """
+    else:
+        orderListHTML = ""
+    return render_template("auth/realizarPedidos.html", materialsListHTML=materialsListHTML, listaResumenHTML=listaResumenHTML, totalResumen=totalResumen, orderListHTML=orderListHTML)
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -371,7 +448,6 @@ def pedidosPersonalizados():
 def addModel():
     if request.method == "POST":
         # Gestionar el agregar modelo
-        mensaje = ""
         newId = request.form['inputNewModelId']
         newName = request.form['inputNewModelName']
         newImage = request.form['inputNewModelImage']
@@ -379,35 +455,39 @@ def addModel():
         newPrice = float(request.form['inputNewModelBasePrice'])
 
         modelo = Model3D(newId, newName, newImage, newFile, newPrice)
+        regresar = 0
         if len(modelo.getModelId()) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El campo id no puede estar vacío </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El campo id no puede estar vacío </div>")
+            regresar = 1
         if len(modelo.getModelName()) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El campo nombre no puede estar vacío </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El campo nombre no puede estar vacío </div>")
+            regresar = 1
         if len(modelo.getModelImage()) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El campo imagen no puede estar vacío </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El campo imagen no puede estar vacío </div>")
+            regresar = 1
         if len(modelo.getModelFile()) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El campo archivo no puede estar vacío </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El campo archivo no puede estar vacío </div>")
+            regresar = 1
         if modelo.getModelBasePrice() <= 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El campo precio no puede ser igual o menor a 0 </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El campo precio no puede ser igual o menor a 0 </div>")
+            regresar = 1
         
-        if mensaje != "":
-            return redirect(url_for("adminModels", mensaje=mensaje))
+        if regresar != 0:
+            return redirect(url_for("adminModels"))
         
         if model3DDAO.insertModel3D(db, modelo) == 1:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> El id del modelo ya existe </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El id del modelo ya existe </div>")
         else:
-            mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado! </div>"
+            flash("<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado! </div>")
 
-        return redirect(url_for("adminModels", mensaje=mensaje))
+        return redirect(url_for("adminModels"))
 
     else:
-        mensaje = ""
-        return redirect(url_for("adminModels", mensaje=mensaje))
+        return redirect(url_for("adminModels"))
 
 @app.route("/updateModel", methods=["POST", "GET"])
 def updateModel():
     if request.method == "POST":
-        mensaje = ""
         modelId = request.form['modelId']
         modelName = request.form['updatedModelName']
         modelImage = request.form['updatedModelImage']
@@ -416,66 +496,68 @@ def updateModel():
         updatedModel = Model3D(modelId, modelName, modelImage, modelFile, modelBasePrice)
 
         if len(updatedModel.getModelId()) == 0 or len(updatedModel.getModelName()) == 0 or len(updatedModel.getModelImage()) == 0 or len(updatedModel.getModelFile()) == 0 or float(updatedModel.getModelBasePrice()) <= 0 or model3DDAO.updateModel3D(db, updatedModel) == 1:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema con los datos... </div>"
-            return redirect(url_for("adminModels", mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema con los datos... </div>")
+            return redirect(url_for("adminModels"))
         else:
-            mensaje = f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{updatedModel.getModelId()}\" actualizado!</div>"
-            return redirect(url_for("adminModels", mensaje=mensaje))
+            flash(f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{updatedModel.getModelId()}\" actualizado!</div>")
+            return redirect(url_for("adminModels"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminModels", mensaje=mensaje))
+        return redirect(url_for("adminModels"))
 
 @app.route("/deleteModel", methods=["POST", "GET"])
 def deleteModel():
     if request.method == "POST":
-        mensaje = ""
         modelId = request.form['modelId']
 
         if model3DDAO.deleteModel3D(db, modelId) == 1:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema inesperado... </div>"
-            return redirect(url_for("adminModels", mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema inesperado... </div>")
+            return redirect(url_for("adminModels"))
 
         else:
-            mensaje = f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{modelId}\" eliminado!</div>"
-            return redirect(url_for("adminModels", mensaje=mensaje))
+            flash(f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{modelId}\" eliminado!</div>")
+            return redirect(url_for("adminModels"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminModels", mensaje=mensaje))
+        return redirect(url_for("adminModels"))
     
 
 # Materiales
 @app.route("/addMaterial", methods=["GET", "POST"])
 def addMaterial():
     if request.method == "POST":
-        mensaje = ""
         newId = request.form['newMaterialId']
         newName = request.form['newMaterialName']
-        newPriceModifier = float(request.form['newMaterialPriceModifier'])
+        newPriceModifier = request.form['newMaterialPriceModifier']
         newMaterial = material(newId, newName, newPriceModifier)
+        regresar = 0
 
         if len(newMaterial.getMaterialId()) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El id no puede estar vacío </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El id no puede estar vacío </div>")
+            regresar = 1
         if len(newMaterial.getMaterialName()) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío </div>"
-        if float(newMaterial.getMaterialPriceModifier()) <= 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El modificador de precio no puede ser 0 o menor </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío </div>")
+            regresar = 1
+        try:
+            if float(newMaterial.getMaterialPriceModifier()) <= 0:
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> El modificador de precio no puede ser 0 o menor </div>")
+                regresar = 1
+        except Exception as ex:
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El modificador de precio debe ser un número valido  </div>")
+            regresar = 1
 
-        if mensaje != "":
-            return redirect(url_for("adminMaterials", mensaje=mensaje))
+        if regresar != 0:
+            return redirect(url_for("adminMaterials"))
         if materialDAO.insertMaterial(db, newMaterial) == 1:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> El id del nuevo material ya existe </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El id del nuevo material ya existe </div>")
         else:
-            mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Material agregado! </div>"
+            flash("<div class=\"alert alert-success\" role=\"alert\"> Material agregado! </div>")
 
-        return redirect(url_for("adminMaterials", mensaje=mensaje))
+        return redirect(url_for("adminMaterials"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminMaterials"), mensaje=mensaje)
+        return redirect(url_for("adminMaterials"))
     
 @app.route("/updateMaterial", methods=["GET", "POST"])
 def updateMaterial():
     if request.method == "POST":
-        mensaje = ""
         currentId = request.form['materialId']
         newName = request.form['newMaterialName']
         newPriceMod = request.form['newMaterialPriceModifier']
@@ -483,150 +565,142 @@ def updateMaterial():
         updatedMaterial = material(currentId, newName, float(newPriceMod))
 
         if len(updatedMaterial.getMaterialName()) == 0 or updatedMaterial.getMaterialPriceModifier() <= 0 or materialDAO.updateMaterial(db, updatedMaterial) == 1:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al actualizar... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al actualizar... </div>")
         else:
-            mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Material actualizado! </div>"
+            flash("<div class=\"alert alert-success\" role=\"alert\"> Material actualizado! </div>")
 
-        return redirect(url_for("adminMaterials", mensaje=mensaje))
+        return redirect(url_for("adminMaterials"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminMaterials", mensaje=mensaje))
+        return redirect(url_for("adminMaterials"))
 
 @app.route("/deleteMaterial", methods=["GET", "POST"])
 def deleteMaterial():
     if request.method == "POST":
-        mensaje = ""
         materialId = request.form['materialId']
 
         newMaterial = material(materialId, "", "")
         try:
             if materialDAO.deleteMaterial(db, newMaterial.getMaterialId()) == 1:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al eliminar... </div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al eliminar... </div>")
             else:
-                mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Material eliminado! </div>"
+                flash("<div class=\"alert alert-success\" role=\"alert\"> Material eliminado! </div>")
         except Exception as ex:
-            mensaje =  "<div class=\"alert alert-success\" role=\"alert\">" + str(Exception(ex)) + "</div>"
-        return redirect(url_for("adminMaterials", mensaje=mensaje))
+            flash( "<div class=\"alert alert-success\" role=\"alert\">" + str(Exception(ex)) + "</div>")
+        return redirect(url_for("adminMaterials"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminMaterials", mensaje=mensaje))
+        return redirect(url_for("adminMaterials"))
 
 # Materiales Validos
 @app.route("/addValidMaterial", methods=["GET", "POST"])
 def addValidMaterials():
     if request.method == "POST":
-        mensaje = ""
         newModelKey = request.form['inputValidModel']
         newMaterialKey = request.form['inputValidMaterial']
         vinculo = validMaterial(newModelKey, newMaterialKey)
         if newModelKey == "nada" or newMaterialKey == "nada":
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> No hay registros para relacionar </div>"
-            return redirect(url_for("adminValidMaterials",mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> No hay registros para relacionar </div>")
+            return redirect(url_for("adminValidMaterials"))
         if validMaterialDAO.insertValidMaterial(db, vinculo) == 1:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> La relación ya existe </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> La relación ya existe </div>")
         else:
-            mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Relación agregada! </div>"
-        return redirect(url_for("adminValidMaterials",mensaje=mensaje))
+            flash("<div class=\"alert alert-success\" role=\"alert\"> Relación agregada! </div>")
+        return redirect(url_for("adminValidMaterials"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminValidMaterials", mensaje=mensaje))
+        return redirect(url_for("adminValidMaterials"))
 
 @app.route("/deleteValidMaterial", methods=["GET", "POST"])
 def deleteValidMaterial():
     if request.method == "POST":
-        mensaje = ""
         modelKey = request.form['modelKey']
         materialKey = request.form['materialKey']
         eliminado = validMaterial(modelKey, materialKey)
         try:
             if validMaterialDAO.deleteValidMaterial(db,eliminado) == 1:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al eliminar... </div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al eliminar... </div>")
             else:
-                mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Relación eliminada! </div>"
+                flash("<div class=\"alert alert-success\" role=\"alert\"> Relación eliminada! </div>")
         except Exception as ex:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
-        return redirect(url_for("adminValidMaterials", mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>")
+        return redirect(url_for("adminValidMaterials"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminValidMaterials", mensaje=mensaje))
+        return redirect(url_for("adminValidMaterials"))
     
 # Usuarios
 @app.route("/addUser", methods=["GET", "POST"])
 def addUser():
     if request.method == "POST":
-        mensaje = ""
         newUsername = request.form['inputNewUserName']
         newUsertype = int(request.form['inputNewUserType'])
         newPassword = request.form['inputNewUserPassword']
         newUser = user(newUsername, newUsertype, newPassword)
+        regresar = 0
         try:
             if len(newUser.getUserName()) == 0 or len(newUser.getUserName()) > 100:
-                mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre debe ser tener entre 1 y 100 caracteres </div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre debe ser tener entre 1 y 100 caracteres </div>")
+                regresar = 1
             if len(newUser.getUserPassword()) == 0:
-                mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> La contraseña no puede estar vacía </div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> La contraseña no puede estar vacía </div>")
+                regresar = 1
+            if regresar != 0:
+                return redirect(url_for("adminUsers"))
             if UserDAO.addUser(db, newUser) == 1:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> El usuario ya existe </div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> El usuario ya existe </div>")
             else:
-                mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Usuario agregado! </div>"
+                flash("<div class=\"alert alert-success\" role=\"alert\"> Usuario agregado! </div>")
             
         except Exception as ex:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>")
         
-        return redirect(url_for("adminUsers", mensaje=mensaje))
+        return redirect(url_for("adminUsers"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminUsers", mensaje=mensaje))
+        return redirect(url_for("adminUsers"))
 
 @app.route("/updateUser", methods=["GET", "POST"])
 def updateUser():
     if request.method == "POST":
-        mensaje = ""
         currentUsername = request.form['currentUserName']
         newUsername = request.form['newUsername']
         newUserType = int(request.form['newUserType'])
 
         try:
             if len(newUsername) == 0:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío </div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío </div>")
             
             if current_user.getUserName() == currentUsername:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "No puedes modificar al usuario activo" + "</div>"
-                return redirect(url_for("adminUsers", mensaje=mensaje))
+                flash("<div class=\"alert alert-danger\" role=\"alert\">" + "No puedes modificar al usuario activo" + "</div>")
+                return redirect(url_for("adminUsers"))
             resultado = UserDAO.updateUser(db, currentUsername, newUsername, newUserType)
 
             if resultado == 1:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>")
             if resultado == 2:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "El nuevo nombre de usuario ya existe" + "</div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\">" + "El nuevo nombre de usuario ya existe" + "</div>")
             if resultado == 0:
-                mensaje = "<div class=\"alert alert-success\" role=\"alert\">" + "Usuario modificado" + "</div>"
+                flash("<div class=\"alert alert-success\" role=\"alert\">" + "Usuario modificado" + "</div>")
         except Exception as ex:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
-        return redirect(url_for("adminUsers", mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>")
+        return redirect(url_for("adminUsers"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminUsers", mensaje=mensaje))
+        return redirect(url_for("adminUsers"))
     
 @app.route("/deleteUser", methods=["GET", "POST"])
 def deleteUser():
     if request.method == "POST":
-        mensaje = ""
         deletedUsername = request.form['currentUserName']
         if current_user.getUserName() == deletedUsername:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "No puedes eliminar al usuario activo" + "</div>"
-            return redirect(url_for("adminUsers", mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\">" + "No puedes eliminar al usuario activo" + "</div>")
+            return redirect(url_for("adminUsers"))
         
         try:
             if UserDAO.deleteUser(db, deletedUsername) == 1:
-                mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>"
+                flash("<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>")
             else:
-                mensaje = "<div class=\"alert alert-success\" role=\"alert\">" + "Usuario eliminado" + "</div>"
+                flash("<div class=\"alert alert-success\" role=\"alert\">" + "Usuario eliminado" + "</div>")
         except Exception as ex:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>"
-        return redirect(url_for("adminUsers", mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\">" + str(Exception(ex)) + "</div>")
+        return redirect(url_for("adminUsers"))
     else:
-        mensaje = ""
-        return redirect(url_for("adminUsers", mensaje=mensaje))
+        return redirect(url_for("adminUsers"))
     
 # AGREGAR ELEMENTO DEL CATALOGO
 @app.route("/addOrderModel", methods=["GET", "POST"])
@@ -640,8 +714,6 @@ def addOrderModel():
             session[f'carrito{username}'] = []
         # Obtener el carrito para el usuario
         carrito = session[f'carrito{username}']
-
-        mensaje = ""
         
         isCustom = False
         modelQty = request.form['modelQty']
@@ -651,8 +723,8 @@ def addOrderModel():
             if modelQty < 1:
                 raise Exception(ex)
         except Exception as ex:
-            mensaje = "<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al agregar... </div>"
-            return redirect(url_for("catalogo", mensaje = mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema al agregar... </div>")
+            return redirect(url_for("catalogo"))
 
         modelID = request.form['modelId']
         modelo = model3DDAO.getModelData(db, modelID)
@@ -685,7 +757,6 @@ def addCustomModel():
             session[f'carrito{username}'] = []
         # Obtener el carrito para el usuario
         carrito = session[f'carrito{username}']
-        mensaje = ""
 
         modelId = request.form['modelId']
         modelName = request.form['modelName']
@@ -694,33 +765,42 @@ def addCustomModel():
         modelMaterialId = request.form['modelMaterialId']
         modelPrice = round(random.uniform(3,15), 2)
         isCustom = True
+        regresar = 0
         
         # VALIDACIONES DE CAMPOS
         if len(modelId) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede estar vacío... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede estar vacío... </div>")
+            regresar = 1
         if len(modelId) > 15:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede ser mayor a 15 caracteres... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede ser mayor a 15 caracteres... </div>")
+            regresar = 1
         if len(modelName) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío... </div>")
+            regresar = 1
         if len(modelName) > 255:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede ser mayor a 255 caracteres... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede ser mayor a 255 caracteres... </div>")
+            regresar = 1
         if len(modelFile) == 0:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede estar vacío... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede estar vacío... </div>")
+            regresar = 1
         if len(modelFile) > 255:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede ser mayor a 255 caracteres... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede ser mayor a 255 caracteres... </div>")
+            regresar = 1
         if modelMaterialId == "nada":
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> No hay materiales para asignar... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> No hay materiales para asignar... </div>")
+            regresar = 1
         if model3DDAO.getModelData(db, modelId) != 1:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> El identificador ya esta ocupado... </div>"
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador ya esta ocupado... </div>")
+            regresar = 1
 
         try:
             if int(request.form['modelQty']) < 1:
                 raise Exception(ex)
         except Exception as ex:
-            mensaje += "<div class=\"alert alert-danger\" role=\"alert\"> Se debe agregar una cantidad valida... </div>"
-            return redirect(url_for('pedidosPersonalizados', mensaje=mensaje))
-        if mensaje != "":
-            return redirect(url_for('pedidosPersonalizados', mensaje=mensaje))
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> Se debe agregar una cantidad valida... </div>")
+            return redirect(url_for('pedidosPersonalizados'))
+        if regresar != 0:
+            return redirect(url_for('pedidosPersonalizados'))
         else:
             # AGREGAR AL CARRITO
             material = materialDAO.getMaterialData(db, modelMaterialId)
@@ -729,13 +809,13 @@ def addCustomModel():
             for model in carrito:
                 if model['modelKey'] == newOrderModel.getModelKey() and model['materialKey'] == newOrderModel.getMaterialKey():
                     model['modelQty'] = int(model['modelQty']) + int(newOrderModel.getModelQty())
-                    mensaje = "<div class=\"alert alert-success\" role=\"alert\"> Como el modelo ya estaba en carrito, se ha sumado su cantidad... </div>"
+                    flash("<div class=\"alert alert-success\" role=\"alert\"> Como el modelo ya estaba en carrito, se ha sumado su cantidad... </div>")
                     break
             else:
                 carrito.append(newOrderModel.toDict())
-            mensaje += "<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado al carrito! </div>"
+            flash("<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado al carrito! </div>")
             session[f'carrito{username}'] = carrito
-            return redirect(url_for('pedidosPersonalizados', mensaje=mensaje))
+            return redirect(url_for('pedidosPersonalizados'))
     else:
         return redirect(url_for('pedidosPersonalizados'))
     
@@ -756,6 +836,7 @@ def deleteFromOrder():
         if current_user.is_authenticated:
             username = current_user.getUserName()
         if f'carrito{username}' not in session:
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El carrito esta vacío  </div>")
             redirect(url_for('pedidosPersonalizados'))
 
         # Obtener el carrito para el usuario
@@ -768,6 +849,7 @@ def deleteFromOrder():
                 carrito.pop(index)
                 break
         session[f'carrito{username}'] = carrito
+        flash("<div class=\"alert alert-success\" role=\"alert\"> Se ha eliminado del carrito  </div>")
         return redirect(url_for('pedidosPersonalizados'))
     else:
         return redirect(url_for('pedidosPersonalizados'))
@@ -779,17 +861,26 @@ def confirmOrder():
         if current_user.is_authenticated:
             username = current_user.getUserName()
         if f'carrito{username}' not in session:
+            flash('<p class="alert alert-danger"> El carrito no puede estar vacío </p>')
             redirect(url_for('pedidosPersonalizados'))
         carrito = session[f'carrito{username}']
+
+        # SI NO HAY CARRITO, NO HACER NADA
+        if len(carrito) == 0:
+            flash('<p class="alert alert-danger"> El carrito no puede estar vacío </p>')
+            return redirect(url_for('pedidosPersonalizados'))
 
         if username == "":
             username = None
 
         if len(request.form['orderAddress']) != 0:
             orderModelDAO.confirmOrder(db, carrito, username, request.form['orderAddress'])
+            flash('<p class="alert alert-success"> Pedido confirmado! </p>')
             if username == None:
                 username = ""
             session[f'carrito{username}'] = []
+        else:
+            flash('<p class="alert alert-danger"> Favor de ingresar dirección de entrega </p>')
         return redirect(url_for('pedidosPersonalizados'))
     else:
         return redirect(url_for('pedidosPersonalizados'))

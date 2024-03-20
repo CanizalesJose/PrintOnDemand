@@ -48,8 +48,15 @@
         </div>
 
         <!-- Mensaje de advertencia -->
-        {{mensaje | safe}}
-
+        <div>
+          {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                  {% for message in messages %}
+                  {{message | safe}}
+                  {% endfor %}
+              {% endif %}
+          {% endwith %}
+        </div>
         <!-- Botón -->
         <button type="submit" class="btn btn-dark btn-block mb-4">Enviar</button>
     </form>
