@@ -14,6 +14,7 @@ Los usuarios administrador tienen la capacidad de:
 
 Los usuarios que no ingresen con una cuenta pueden:
 - Realizar pedidos anónimos únicamente con los modelos del catalogo.
+- Buscar pedidos realizados en base al Id del pedido
 
 ### Guia de instalación
 Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server instalado y configurado.
@@ -25,8 +26,7 @@ Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server insta
     deactivate
     mysql -u root -p
     [contraseña]
-    source src\DataBase.sql
-    source src\InsertarDatos.sql
+    source src\PrintOnDemandDatabase.sql
     exit
     env\Scripts\activate
     python src\app.py
