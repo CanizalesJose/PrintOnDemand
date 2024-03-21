@@ -81,7 +81,69 @@ class orderDAO():
     def getOrderFromId(self, db, orderId):
         try:
             cursor = db.connection.cursor()
-            cursor.execute('select orderId, orderDate, orderTotalCost, orderUser, orderAddress from orders where orderId = %s', (orderId, ))
+            cursor.execute('select orderDate, orderTotalCost, orderAddress from orders where orderId = %s and orderUser is null', (orderId, ))
+            resultado = cursor.fetchone()
+            if resultado == None:
+                return None
+            else:
+                print(resultado)
+                return order(orderId, resultado[0], float(resultado[1]), None, resultado[2])
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            db.connection.cursor().close()
+
+
+    @classmethod
+    def getModelNoUser(self, db, orderId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute('select orderModelKey, orderModelFile, orderModelName, orderMaterialName, orderModelQty, orderModelPrice, round((orderModelQty*orderModelPrice*orderMaterialPriceModifier), 2) as subtotal from orders inner join ordermodels on orders.orderId = orderModels.orderKey where orderId = %s and orderUser is null', (orderId, ))
+            resultado = cursor.fetchall()
+            if resultado == ():
+                return []
+            else:
+                modelos = []
+                for modelo in resultado:
+                    newModelo = {
+                        'modelKey' : modelo[0],
+                        'modelFile' : modelo[1],
+                        'modelName' : modelo[2],
+                        'materialName' : modelo[3],
+                        'modelQty' : modelo[4],
+                        'modelPrice' : modelo[5],
+                        'subtotal' : modelo[6]
+                    }
+                    modelos.append(newModelo)
+                return modelos
+
+        except Exception as ex:
+            raise Exception(ex)
+        finally:
+            db.connection.cursor().close()
+    
+    @classmethod
+    def getCustomModelNoUser(self, db, orderId):
+        try:
+            cursor = db.connection.cursor()
+            cursor.execute('select customModelId, customModelFile, customModelName, customMaterialName, customModelQty, customModelPrice, round((customModelQty*customModelPrice*customMaterialPriceModifier), 2) as subtotal from orders inner join customordermodels on orders.orderId = customorderModels.orderKey where orderId = %s and orderUser is null', (orderId, ))
+            resultado = cursor.fetchall()
+            if resultado == ():
+                return []
+            else:
+                modelos = []
+                for modelo in resultado:
+                    newModelo = {
+                        'modelKey' : modelo[0],
+                        'modelFile' : modelo[1],
+                        'modelName' : modelo[2],
+                        'materialName' : modelo[3],
+                        'modelQty' : modelo[4],
+                        'modelPrice' : modelo[5],
+                        'subtotal' : modelo[6]
+                    }
+                    modelos.append(newModelo)
+                return modelos
         except Exception as ex:
             raise Exception(ex)
         finally:

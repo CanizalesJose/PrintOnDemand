@@ -47,11 +47,3 @@ call registrarValidMaterial("model4", "material3");
 call registrarValidMaterial("model5", "material1");
 
 call registrarValidMaterial("model6", "material2");
-
-select * from orders;
-select * from customordermodels;
-select * from ordermodels;
-
-select orderModelKey, orderModelFile, orderModelName, orderMaterialName, orderModelQty, orderModelPrice, round((orderModelQty*orderModelPrice*orderMaterialPriceModifier), 2) as subtotal from orders inner join ordermodels on orders.orderId = orderModels.orderKey where orderUser = "admin";
-
-select customModelId, customModelFile, customModelName, customMaterialName, customModelQty, customModelPrice, round((customModelQty*customModelPrice*customMaterialPriceModifier), 2) as subtotal from orders inner join customordermodels on orders.orderId = customorderModels.orderKey where orderUser = "admin";

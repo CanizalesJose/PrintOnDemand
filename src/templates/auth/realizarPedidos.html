@@ -55,12 +55,12 @@
                 {% endif %}
 
                 <div>
-                    {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            {% for message in messages %}
-                            {{message | safe}}
-                            {% endfor %}
-                        {% endif %}
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% for category, message in messages %}
+                            {% if category == 'warning' %}
+                                {{message | safe}}
+                            {% endif %}
+                        {% endfor %}
                     {% endwith %}
                 </div>
 
@@ -127,16 +127,25 @@
 
                 {% if not current_user.is_authenticated %}
                 <!-- GENERAR UNA BÚSQUEDA CUANDO NO HAY UN USUARIO DONDE PUEDA BUSCAR UNA UNICA ORDEN -->
-                <form action="/searchOrder" method="POST">
-                    <div class="form-floating mb-4 mx-5">
-                        <input type="text" class="form-control" name="orderId" placeholder="orderId">
-                        <label>Id del pedido:</label>
-                    </div>
+                    <form action="/searchOrder" method="POST">
+                        <div class="form-floating mb-4 mx-5">
+                            <input type="text" class="form-control" name="orderId" placeholder="orderId">
+                            <label>Id del pedido:</label>
+                        </div>
 
-                    <div class="text-center mb-4 mx-5">
-                        <button type="submit" class="btn btn-primary bg-gradient my-3" onclick="return confirm('¿Buscar pedido?')">Buscar Pedido</button>
-                    </div>
-                </form>
+                        <div class="text-center mb-4 mx-5">
+                            <button type="submit" class="btn btn-primary bg-gradient my-3" onclick="return confirm('¿Buscar pedido?')">Buscar Pedido</button>
+                        </div>
+                    </form>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% for category, message in messages %}
+                            {% if category == 'info' %}
+                                {{message | safe}}
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+
                 {% endif %}
 
                 {% if current_user.is_authenticated %}

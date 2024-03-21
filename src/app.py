@@ -769,35 +769,35 @@ def addCustomModel():
         
         # VALIDACIONES DE CAMPOS
         if len(modelId) == 0:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede estar vacío... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede estar vacío... </div>", "warning")
             regresar = 1
         if len(modelId) > 15:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede ser mayor a 15 caracteres... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador no puede ser mayor a 15 caracteres... </div>", "warning")
             regresar = 1
         if len(modelName) == 0:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede estar vacío... </div>", "warning")
             regresar = 1
         if len(modelName) > 255:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede ser mayor a 255 caracteres... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El nombre no puede ser mayor a 255 caracteres... </div>", "warning")
             regresar = 1
         if len(modelFile) == 0:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede estar vacío... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede estar vacío... </div>", "warning")
             regresar = 1
         if len(modelFile) > 255:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede ser mayor a 255 caracteres... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El archivo no puede ser mayor a 255 caracteres... </div>", "warning")
             regresar = 1
         if modelMaterialId == "nada":
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> No hay materiales para asignar... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> No hay materiales para asignar... </div>", "warning")
             regresar = 1
         if model3DDAO.getModelData(db, modelId) != 1:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador ya esta ocupado... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El identificador ya esta ocupado... </div>", "warning")
             regresar = 1
 
         try:
             if int(request.form['modelQty']) < 1:
                 raise Exception(ex)
         except Exception as ex:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> Se debe agregar una cantidad valida... </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> Se debe agregar una cantidad valida... </div>", "warning")
             return redirect(url_for('pedidosPersonalizados'))
         if regresar != 0:
             return redirect(url_for('pedidosPersonalizados'))
@@ -809,11 +809,11 @@ def addCustomModel():
             for model in carrito:
                 if model['modelKey'] == newOrderModel.getModelKey() and model['materialKey'] == newOrderModel.getMaterialKey():
                     model['modelQty'] = int(model['modelQty']) + int(newOrderModel.getModelQty())
-                    flash("<div class=\"alert alert-success\" role=\"alert\"> Como el modelo ya estaba en carrito, se ha sumado su cantidad... </div>")
+                    flash("<div class=\"alert alert-success\" role=\"alert\"> Como el modelo ya estaba en carrito, se ha sumado su cantidad... </div>", "warning")
                     break
             else:
                 carrito.append(newOrderModel.toDict())
-            flash("<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado al carrito! </div>")
+            flash("<div class=\"alert alert-success\" role=\"alert\"> Modelo agregado al carrito! </div>", "warning")
             session[f'carrito{username}'] = carrito
             return redirect(url_for('pedidosPersonalizados'))
     else:
@@ -836,7 +836,7 @@ def deleteFromOrder():
         if current_user.is_authenticated:
             username = current_user.getUserName()
         if f'carrito{username}' not in session:
-            flash("<div class=\"alert alert-danger\" role=\"alert\"> El carrito esta vacío  </div>")
+            flash("<div class=\"alert alert-danger\" role=\"alert\"> El carrito esta vacío  </div>", "warning")
             redirect(url_for('pedidosPersonalizados'))
 
         # Obtener el carrito para el usuario
@@ -849,7 +849,7 @@ def deleteFromOrder():
                 carrito.pop(index)
                 break
         session[f'carrito{username}'] = carrito
-        flash("<div class=\"alert alert-success\" role=\"alert\"> Se ha eliminado del carrito  </div>")
+        flash("<div class=\"alert alert-success\" role=\"alert\"> Se ha eliminado del carrito  </div>", "warning")
         return redirect(url_for('pedidosPersonalizados'))
     else:
         return redirect(url_for('pedidosPersonalizados'))
@@ -861,13 +861,13 @@ def confirmOrder():
         if current_user.is_authenticated:
             username = current_user.getUserName()
         if f'carrito{username}' not in session:
-            flash('<p class="alert alert-danger"> El carrito no puede estar vacío </p>')
+            flash('<p class="alert alert-danger"> El carrito no puede estar vacío </p>', "warning")
             redirect(url_for('pedidosPersonalizados'))
         carrito = session[f'carrito{username}']
 
         # SI NO HAY CARRITO, NO HACER NADA
         if len(carrito) == 0:
-            flash('<p class="alert alert-danger"> El carrito no puede estar vacío </p>')
+            flash('<p class="alert alert-danger"> El carrito no puede estar vacío </p>', "warning")
             return redirect(url_for('pedidosPersonalizados'))
 
         if username == "":
@@ -875,15 +875,65 @@ def confirmOrder():
 
         if len(request.form['orderAddress']) != 0:
             orderId = orderModelDAO.confirmOrder(db, carrito, username, request.form['orderAddress'])
-            flash(f'<p class="alert alert-success"> Pedido confirmado!<br>Tu ID de pedido es: {orderId}<br>Si no posee una cuenta es importante que guarde este Id para consultar su pedido</p>')
+            flash(f'<p class="alert alert-success"> Pedido confirmado!<br>Tu ID de pedido es: {orderId}<br>Si no posee una cuenta es importante que guarde este Id para consultar su pedido</p>', "warning")
             if username == None:
                 username = ""
             session[f'carrito{username}'] = []
         else:
-            flash('<p class="alert alert-danger"> Favor de ingresar dirección de entrega </p>')
+            flash('<p class="alert alert-danger"> Favor de ingresar dirección de entrega </p>', "warning")
         return redirect(url_for('pedidosPersonalizados'))
     else:
         return redirect(url_for('pedidosPersonalizados'))
+    
+@app.route("/searchOrder", methods=["GET", "POST"])
+def searchOrder():
+    pedido = orderDAO.getOrderFromId(db, request.form['orderId'])
+    if pedido == None:
+        flash('<p class="alert alert-danger"> Pedido no válido </p>', "info")
+        return redirect(url_for('pedidosPersonalizados'))
+    orderListHTML = ""
+    orderListHTML += f"""
+        <h3 class="text-start">Id del pedido: {pedido.getOrderId()}</h3>
+        <h6 class="text-start">Fecha del pedido: {pedido.getOrderDate()}</h6>
+        <h5 class="text-start">Modelos del catalogo:</h5>
+        <div class="overflow-scroll">
+                <table class="table table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Model Id</th>
+                            <th scope="col">Archivo</th>
+                            <th scope="col">Modelo</th>
+                            <th scope="col">Material</th>
+                            <th scope="col">Qty.</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    """
+    for modelo in orderDAO.getModelNoUser(db, pedido.getOrderId()):
+        orderListHTML += f"""
+            <tr>
+                <td>{modelo['modelKey']}</td>
+                <td>{modelo['modelFile']}</td>
+                <td>{modelo['modelName']}</td>
+                <td>{modelo['materialName']}</td>
+                <td>{modelo['modelQty']}</td>
+                <td>{modelo['modelPrice']}</td>
+                <td>{modelo['subtotal']}</td>
+            </tr>
+        """
+    
+    orderListHTML += f"""
+        </tbody>
+            </table>
+        </div>
+        <h6 class="text-end">Total: $ {pedido.getOrderTotalCost()}<h6>
+        <h6 class="text-start">Dirección de entrega: {pedido.getOrderAddress()}</h6>
+        <hr>
+    """
+    flash(orderListHTML, "info")
+    return redirect(url_for('pedidosPersonalizados'))
 
 # En caso de ingresar una ruta que no existe
 @app.errorhandler(404)
