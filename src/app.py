@@ -1,10 +1,18 @@
 # Importar librerias
-from flask import Flask, render_template, redirect, request, url_for, flash, get_flashed_messages, abort, session
+from flask import Flask, render_template, redirect, request, url_for, flash, abort, session, Response
 from flask_mysqldb import MySQL
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user
+from spyne import Application, Interface
+from spyne.protocol.soap import Soap11
+from spyne.server.wsgi import WsgiApplication
+from spyne.interface.wsdl import Wsdl11
+from werkzeug.wrappers import Request, Response
+import threading, signal, sys
 from functools import wraps
 from config.config import config
 import random
+from suds.client import Client
+# Importar modelos
 from modelos.model3D import Model3D
 from modelos.model3DDAO import model3DDAO
 from modelos.user import user
@@ -16,9 +24,8 @@ from modelos.validMaterial import validMaterial
 from modelos.validMaterialDAO import validMaterialDAO
 from modelos.orderModel import orderModel
 from modelos.orderModelDAO import orderModelDAO
-from modelos.order import order
 from modelos.orderDAO import orderDAO
-
+from modelos.UserService import UserService
 
 # Crear instancias
 app = Flask(__name__)
@@ -643,7 +650,7 @@ def addUser():
                 regresar = 1
             if regresar != 0:
                 return redirect(url_for("adminUsers"))
-            if UserDAO.addUser(db, newUser) == 1:
+            if UserDAO.addUser(newUser) == 1:
                 flash("<div class=\"alert alert-danger\" role=\"alert\"> El usuario ya existe </div>")
             else:
                 flash("<div class=\"alert alert-success\" role=\"alert\"> Usuario agregado! </div>")
@@ -692,7 +699,7 @@ def deleteUser():
             return redirect(url_for("adminUsers"))
         
         try:
-            if UserDAO.deleteUser(db, deletedUsername) == 1:
+            if UserDAO.deleteUser(deletedUsername) == 1:
                 flash("<div class=\"alert alert-danger\" role=\"alert\">" + "El usuario no existe" + "</div>")
             else:
                 flash("<div class=\"alert alert-success\" role=\"alert\">" + "Usuario eliminado" + "</div>")
@@ -940,8 +947,52 @@ def searchOrder():
 def rutaInexistente(e):
     return redirect(url_for('iniciarSesion'))
 
+# Web Service
 
-# Al ejecutar el archivo, inicia el servidor
+@app.route('/soap/addUser', methods=['GET', 'POST'])
+def soapAddUser():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        userType = int(request.form['usertype'])
+        
+        # Llamar al servicio SOAP para agregar el usuario
+        try:
+            with app.app_context():
+                client = Client('http://localhost:5001/soap?wsdl')
+                resultado = client.service.addUser(username, password, userType)
+        except Exception as ex:
+            return str(ex)
+            
+        # Redirigir a alguna página de éxito o mostrar un mensaje de éxito
+        return f"Usuario agregado exitosamente, salida: {resultado}"
+    else:
+        # Mostrar el formulario para agregar usuario
+        return render_template('auth/AddUserSOAP.html')
+
+# Iniciar servidor SOAP
+def initSOAP():
+    from wsgiref.simple_server import make_server
+    spyne_app = Application([UserService], 'soap.addUser', in_protocol=Soap11(validator='lxml'), out_protocol=Soap11())
+    spyne_wsgi_app = WsgiApplication(spyne_app)
+
+    spyne_server = make_server('localhost', 5001, spyne_wsgi_app)
+    print('Servidor SOAP iniciado: http://localhost:5001/soap')
+    spyne_server.serve_forever()
+
+# Iniciar servidor Flask
+def initFlask():
+    try:
+        print('Servidor Flask iniciado: http://localhost:5000')
+        app.config.from_object(config['development'])
+        app.run(debug=True)
+    except Exception as ex:
+        print(f'Error al iniciar servidor: {ex}')
+
+
+# Al ejecutar app.py -> inicia el servidor
 if __name__ == "__main__":
-    app.config.from_object(config['development'])
-    app.run(use_reloader=True)
+    soap_thread = threading.Thread(target=initSOAP)
+
+    soap_thread.start()
+    initFlask()

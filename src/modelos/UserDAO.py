@@ -1,5 +1,6 @@
 from .user import user
 from .userType import userType
+from config.Conexion import Conexion
 
 class UserDAO():
 
@@ -53,19 +54,20 @@ class UserDAO():
             cursor.close()
 
     @classmethod
-    def addUser(self, db, usuario):
+    def addUser(self, usuario):
         try:
-            cursor = db.connection.cursor()
-            cursor.execute("call iniciarSesion(%s, %s)", (usuario.getUserName(), usuario.getUserPassword()))
+            db = Conexion.generarConexion()
+            cursor = db.cursor()
+            cursor.execute("select * from users where username = %s", (usuario.getUserName(),))
             consulta = cursor.fetchone()
-            if consulta == None:
+            if consulta != None:
                 return 1
             else:
                 cursor.execute("call registrarUser(%s, %s, %s)", (usuario.getUserName(), usuario.getUserPassword(), usuario.getUserType()))
-                db.connection.commit()
+                db.commit()
                 return 0
         except Exception as ex:
-            db.connection.rollback()
+            db.rollback()
             raise Exception(ex)
         finally:
             cursor.close()
@@ -93,18 +95,19 @@ class UserDAO():
             cursor.close()
 
     @classmethod
-    def deleteUser(self, db, deletedUsername):
+    def deleteUser(self, deletedUsername):
         try:
-            cursor = db.connection.cursor()
+            db = Conexion.generarConexion()
+            cursor = db.cursor()
             cursor.execute("select username from users where username = %s", (deletedUsername, ))
             consulta = cursor.fetchone()
             if consulta == None:
                 return 1
             cursor.execute("call deleteUser(%s)", (deletedUsername, ))
-            db.connection.commit()
+            db.commit()
             return 0
         except Exception as ex:
-            db.connection.rollback()
+            db.rollback()
             raise Exception(ex)
         finally:
             cursor.close()
