@@ -1,13 +1,11 @@
 # Importar librerias
-from flask import Flask, render_template, redirect, request, url_for, flash, abort, session, Response
+from flask import Flask, render_template, redirect, request, url_for, flash, abort, session
 from flask_mysqldb import MySQL
 from flask_login import LoginManager, login_user, logout_user, current_user
-from spyne import Application, Interface
+from spyne import Application
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
-from spyne.interface.wsdl import Wsdl11
-from werkzeug.wrappers import Request, Response
-import threading, signal, sys
+import threading
 from functools import wraps
 from config.config import config
 import random
@@ -955,17 +953,24 @@ def soapAddUser():
         username = request.form['username']
         password = request.form['password']
         userType = int(request.form['usertype'])
+
+        if len(username) < 1 or len(password) < 1:
+            flash('Los datos deben estar completos')
+            return redirect(url_for('soapAddUser'))
         
         # Llamar al servicio SOAP para agregar el usuario
         try:
             with app.app_context():
                 client = Client('http://localhost:5001/soap?wsdl')
                 resultado = client.service.addUser(username, password, userType)
+            # Redirigir a alguna página de éxito o mostrar un mensaje de éxito
+            if resultado == 0:
+                flash(f'Código de salida: {resultado}\nUsuario Agregado')
+            else:
+                flash(f'Código de salida: {resultado}\nError en registro')
+            return redirect(url_for('soapAddUser'))
         except Exception as ex:
             return str(ex)
-            
-        # Redirigir a alguna página de éxito o mostrar un mensaje de éxito
-        return f"Usuario agregado exitosamente, salida: {resultado}"
     else:
         # Mostrar el formulario para agregar usuario
         return render_template('auth/AddUserSOAP.html')
