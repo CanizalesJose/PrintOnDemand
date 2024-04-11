@@ -1,3 +1,5 @@
 env
 src/config/__pycache__
 src/modelos/__pycache__
+src/auxMethods/__pycache__
+src/__pycache__

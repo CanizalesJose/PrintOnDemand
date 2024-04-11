@@ -497,6 +497,7 @@ def addModel():
 # ---------------------------------------------------------------------------------------
 # Ejemplo de Arquitectura REST
 # Se usa el método HTTP PATCH para acceder a esta dirección, se maneja mediante ajax en JavaScripts (src/templates/auth/adminModels.html)
+# Se actualiza el recurso de modelo parcialmente desde la base de datos
 @app.route("/updateModel", methods=["PATCH", "GET"])
 def updateModel():
     if request.method == "PATCH":
@@ -521,6 +522,7 @@ def updateModel():
         return redirect(url_for("adminModels"))
 
 # Se usa el método HTTP DELETE para acceder a esta dirección, se maneja mediante ajax en JavaScript (src/templates/auth/adminModels.html)
+# Se borra el recurso de modelo desde la base de datos
 @app.route("/deleteModel", methods=["DELETE", "GET"])
 def deleteModel():
     if request.method == "DELETE":
