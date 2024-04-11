@@ -26,8 +26,8 @@ Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server insta
     deactivate
     mysql -u root -p
     [contraseña]
-    source src\CreateDBScript.sql
-    source src\FillDataScript.sql
+    source src\database\CreateDBScript.sql
+    source src\database\FillDataScript.sql
     exit
     env\Scripts\activate
     python src\app.py
