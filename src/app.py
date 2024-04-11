@@ -10,6 +10,7 @@ from functools import wraps
 from config.config import config
 import random
 from suds.client import Client
+import json
 # Importar modelos
 from modelos.model3D import Model3D
 from modelos.model3DDAO import model3DDAO
@@ -45,7 +46,7 @@ def admin_required(func):
 
 # Definición de rutas para páginas
 
-@app.route("/logout")
+@app.route("/logout", methods=["GET"])
 def logout():
     if current_user.is_authenticated:
         logout_user()
@@ -76,7 +77,7 @@ def iniciarSesion():
             return redirect(url_for('catalogo'))
         return render_template('auth/InicioSesion.html')
 
-@app.route("/catalogo")
+@app.route("/catalogo", methods=["GET"])
 def catalogo():
 
     catalogo = ""
@@ -128,11 +129,12 @@ def catalogo():
             """
     return render_template("auth/catalogo.html", catalogo=catalogo)
 
-@app.route("/adminModels")
+@app.route("/adminModels", methods=["GET"])
 def adminModels():
     if current_user.is_authenticated and current_user.getUserType() == 1:
         listaModelosHTML = ""
         listaModelos = model3DDAO.getAllModels(db)
+        modelsId = []
         if listaModelos != None:
             for modelo in listaModelos:
                 listaModelosHTML += f"""
@@ -143,43 +145,45 @@ def adminModels():
                     <td>{modelo.getModelFile()}</td>
                     <td>{modelo.getModelBasePrice()}</td>
                     <td>
-                        <form action="/updateModel" method="POST">
+                        <form id="updateForm{modelo.getModelId()}">
                             <input type="hidden" name="modelId" value="{modelo.getModelId()}">
                             <div class="form-floating mb-1">
-                                <input type="text" class="form-control" name="updatedModelName" value="{modelo.getModelName()}">
+                                <input type="text" class="form-control" id="updatedModelName{modelo.getModelId()}" name="updatedModelName" value="{modelo.getModelName()}">
                                 <label>Nuevo nombre</label>
                             </div>
 
                             <div class="form-floating mb-1">
-                                <input type="text" class="form-control" name="updatedModelImage" value="{modelo.getModelImage()}">
+                                <input type="text" class="form-control" id="updatedModelImage{modelo.getModelId()}" name="updatedModelImage" value="{modelo.getModelImage()}">
                                 <label>Nueva Imagen</label>
                             </div>
 
                             <div class="form-floating mb-1">
-                                <input type="text" class="form-control" name="updatedModelFile" value="{modelo.getModelFile()}">
+                                <input type="text" class="form-control" id="updatedModelFile{modelo.getModelId()}" name="updatedModelFile" value="{modelo.getModelFile()}">
                                 <label>Nuevo archivo</label>
                             </div>
 
                             <div class="form-floating mb-1">
-                                <input type="number" step="0.01" class="form-control" name="updatedModelBasePrice" value="{modelo.getModelBasePrice()}">
+                                <input type="number" step="0.01" class="form-control" id="updatedModelBasePrice{modelo.getModelId()}" name="updatedModelBasePrice" value="{modelo.getModelBasePrice()}">
                                 <label>Nuevo precio base</label>
                             </div>
 
-                            <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estás seguro de modificar este modelo?')">Modificar</button>
+                            <button type="button" class="btn btn-primary bg-gradient mt-3" onclick='updateModel("{modelo.getModelId()}")'>Modificar</button>
                         </form>
 
-                        <form action="/deleteModel" method="POST">
+                        <form id="deleteForm{modelo.getModelId()}">
                             <input type="hidden" name="modelId" value="{modelo.getModelId()}">
-                            <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estás seguro de eliminar este modelo? Se eliminaran todos las relaciones con materiales asignadas')">Eliminar</button>
+                            <button type="button" class="btn btn-danger bg-gradient mt-3" onclick='deleteModel("{modelo.getModelId()}")'>Eliminar</button>
                         </form>
                     </td>
                 </tr>
                 """
-        return render_template("auth/adminModels.html", listaModelosHTML=listaModelosHTML)
+                modelsId.append(modelo.getModelId())
+        modelsId = json.dumps(modelsId)
+        return render_template("auth/adminModels.html", listaModelosHTML=listaModelosHTML, modelsId=modelsId)
     else:
         return redirect('catalogo')
 
-@app.route("/adminUsers")
+@app.route("/adminUsers", methods=["GET"])
 def adminUsers():
     if current_user.is_authenticated and current_user.getUserType() == 1:
         # Genera los tipos de usuarios y los agrega a las opciones
@@ -229,7 +233,7 @@ def adminUsers():
     else:
         return redirect('catalogo')
 
-@app.route("/adminMaterials")
+@app.route("/adminMaterials", methods=["GET"])
 def adminMaterials():
     if current_user.is_authenticated and current_user.getUserType() == 1:
         materialsList = materialDAO.getAllMaterials(db)
@@ -267,7 +271,7 @@ def adminMaterials():
     else:
         return redirect('catalogo')
 
-@app.route("/adminValidMaterials")
+@app.route("/adminValidMaterials", methods=["GET"])
 def adminValidMaterials():
     if current_user.is_authenticated and current_user.getUserType() == 1:
         # Generar lista de modelos validos
@@ -315,7 +319,7 @@ def adminValidMaterials():
     else:
         return redirect('catalogo')
 
-@app.route("/pedidosPersonalizados")
+@app.route("/pedidosPersonalizados", methods=["GET"])
 def pedidosPersonalizados():
     materialsListHTML =""
     listaResumenHTML = ""
@@ -490,40 +494,49 @@ def addModel():
     else:
         return redirect(url_for("adminModels"))
 
-@app.route("/updateModel", methods=["POST", "GET"])
+# ---------------------------------------------------------------------------------------
+# Ejemplo de Arquitectura REST
+# Se usa el método HTTP PATCH para acceder a esta dirección, se maneja mediante ajax en JavaScripts (src/templates/auth/adminModels.html)
+@app.route("/updateModel", methods=["PATCH", "GET"])
 def updateModel():
-    if request.method == "POST":
-        modelId = request.form['modelId']
-        modelName = request.form['updatedModelName']
-        modelImage = request.form['updatedModelImage']
-        modelFile = request.form['updatedModelFile']
-        modelBasePrice = float(request.form['updatedModelBasePrice'])
+    if request.method == "PATCH":
+        data = json.loads(request.get_data())
+
+        modelId = data['modelId']
+        modelName = data['updatedModelName']
+        modelImage = data['updatedModelImage']
+        modelFile = data['updatedModelFile']
+        modelBasePrice = float(data['updatedModelBasePrice'])
         updatedModel = Model3D(modelId, modelName, modelImage, modelFile, modelBasePrice)
 
         if len(updatedModel.getModelId()) == 0 or len(updatedModel.getModelName()) == 0 or len(updatedModel.getModelImage()) == 0 or len(updatedModel.getModelFile()) == 0 or float(updatedModel.getModelBasePrice()) <= 0 or model3DDAO.updateModel3D(db, updatedModel) == 1:
             flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema con los datos... </div>")
-            return redirect(url_for("adminModels"))
+            # return redirect(url_for("adminModels"))
+            return ""
         else:
             flash(f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{updatedModel.getModelId()}\" actualizado!</div>")
-            return redirect(url_for("adminModels"))
+            # return redirect(url_for("adminModels"))
+            return ""
     else:
         return redirect(url_for("adminModels"))
 
-@app.route("/deleteModel", methods=["POST", "GET"])
+# Se usa el método HTTP DELETE para acceder a esta dirección, se maneja mediante ajax en JavaScript (src/templates/auth/adminModels.html)
+@app.route("/deleteModel", methods=["DELETE", "GET"])
 def deleteModel():
-    if request.method == "POST":
-        modelId = request.form['modelId']
+    if request.method == "DELETE":
+        modelId = json.loads(request.get_data())
 
         if model3DDAO.deleteModel3D(db, modelId) == 1:
             flash("<div class=\"alert alert-danger\" role=\"alert\"> Hubo un problema inesperado... </div>")
-            return redirect(url_for("adminModels"))
+            return "1"
 
         else:
             flash(f"<div class=\"alert alert-success\" role=\"alert\"> Modelo \"{modelId}\" eliminado!</div>")
-            return redirect(url_for("adminModels"))
+            return "0"
     else:
         return redirect(url_for("adminModels"))
-    
+# Fin de Ejemplo de Arquitectura REST
+# -------------------------------------------------------------------------------
 
 # Materiales
 @app.route("/addMaterial", methods=["GET", "POST"])

@@ -1,6 +1,7 @@
 {% extends 'plantillaBase.html' %}
 
 {% block cabecera %}
+    <meta name="modelsId" content="{{modelsId}}">
 {% endblock %}
 
 {% block titulo %}
@@ -80,4 +81,52 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function updateModel(id) {
+            if (confirm('¿Estas seguro de actualizar este modelo?')) {
+                const modelId = id;
+                const newName = document.querySelector("#updatedModelName"+id).value.trim();
+                const newImage = document.querySelector("#updatedModelImage"+id).value.trim();
+                const newFile = document.querySelector("#updatedModelFile"+id).value.trim();
+                const newPrice = document.querySelector("#updatedModelBasePrice"+id).value;
+
+                formData = {
+                    modelId:modelId,
+                    updatedModelName:newName,
+                    updatedModelImage:newImage,
+                    updatedModelFile:newFile,
+                    updatedModelBasePrice:parseFloat(newPrice)
+                }
+
+                $.ajax({
+                    url: '/updateModel',
+                    type: 'PATCH',
+                    data: JSON.stringify(formData),
+                    success: function(response){
+                        window.location.href = "/adminModels";
+                    },
+                    error: function(status){
+                        window.location.href = "/adminModels";
+                    }
+                });
+            }
+        }
+
+        function deleteModel(id){
+            if (confirm('¿Estas seguro de eliminar este modelo?')) {
+                $.ajax({
+                    url: '/deleteModel',
+                    type: 'DELETE',
+                    data: JSON.stringify(id),
+                    success: function(response){
+                        window.location.href = "/adminModels";
+                    },
+                    error: function(status){
+                        window.location.href = "/adminModels";
+                    }
+                });
+            }
+        }
+    </script>
 {% endblock %}
