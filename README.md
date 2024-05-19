@@ -17,7 +17,7 @@ Los usuarios que no ingresen con una cuenta pueden:
 - Buscar pedidos realizados en base al Id del pedido
 
 ### Guia de instalación
-Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server instalado y configurado.
+Se debe tener instalado `Python 3.8` para ejecutar el servidor. MySQL Server instalado y configurado.
 - Dentro de un CMD, ingresar la siguiente secuencia de comandos dentro de la carpeta del proyecto.
 ```
     python -m venv env
@@ -34,3 +34,9 @@ Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server insta
 ```
 Esto es en caso de ser primera instalación.
 A partir de aqui, el servidor puede iniciarse al activar el entorno virtual y ejecutar `app.py`.
+
+En caso de tener MySQL Server con configuraciones personales, es posible modificar el archivo `config/config.py` y modificar los parametros
+- MYSQL_HOST
+- MYSQL_USER
+- MYSQL_PASSWORD
+- MYSQL_DB
