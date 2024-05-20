@@ -25,7 +25,7 @@ class orderModelDAO():
             # CALCULAR TOTAL
             for registro in carrito:
                 total += int(registro['modelQty'])*float(registro['modelPrice'])*float(registro['materialPriceModifier'])
-                totalQty += registro['modelQty']
+                totalQty += int(registro['modelQty'])
 
             if username != None:
                 cursor.execute("call insertOrderWithUser(%s, %s, %s, %s, %s)", (orderId, fechaActual, total, username, address))
