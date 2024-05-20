@@ -17,7 +17,7 @@ Los usuarios que no ingresen con una cuenta pueden:
 - Buscar pedidos realizados en base al Id del pedido
 
 ### Guia de instalación
-Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server instalado y configurado.
+Se debe tener instalado `Python 3.8` para ejecutar el servidor. MySQL Server instalado y configurado.
 - Dentro de un CMD, ingresar la siguiente secuencia de comandos dentro de la carpeta del proyecto.
 ```
     python -m venv env
@@ -26,11 +26,25 @@ Se debe tener instalado `Python 8` para ejecutar el servidor. MySQL Server insta
     deactivate
     mysql -u root -p
     [contraseña]
-    source src\database\CreateDBScript.sql
-    source src\database\FillDataScript.sql
+    source src\database\prepareDB.sql;
     exit
     env\Scripts\activate
     python src\app.py
 ```
 Esto es en caso de ser primera instalación.
 A partir de aqui, el servidor puede iniciarse al activar el entorno virtual y ejecutar `app.py`.
+***
+En caso de tener MySQL Server con configuraciones personales, es posible modificar el archivo `config/config.py` y modificar los parametros de la base de datos principal
+- MYSQL_HOST
+- MYSQL_USER
+- MYSQL_PASSWORD
+- MYSQL_DB
+
+Para modificar los parametros de la base de datos secundaria, modificar el archivo `config/Conexion.py`
+
+El microservicio de entregas se encuentra totalmente contenido dentro de su clase `modelos/deliveryMicroservice.py`.
+Este microservicio permite gestionar la base de datos `deliveryDB`, la cual simula una empresa de paquetería que trabaja en conjunto con PrintOnDemand3D
+- Genera conexión a base de datos independiente
+- Almacena las direcciones y estatus de envío de todos los pedidos realizados en la aplicación principal
+- Permite alimentar la función de búsqueda de pedidos para ver el estatus del envío
+- Simula que la gestión del envío se realiza desde una aplicación y organización completamente distinta, y el único medio de comunicación es el microservicio

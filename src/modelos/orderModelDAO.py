@@ -1,6 +1,7 @@
 from .orderModel import orderModel
 import secrets
 from datetime import datetime
+from .deliveryMicroservice import deliveryMicroservice
 
 class orderModelDAO():
     
@@ -12,6 +13,7 @@ class orderModelDAO():
             orderId = secrets.token_urlsafe()[:15]
             fechaActual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             total = 0
+            totalQty = 0
 
             cursor.execute("select orderId from orders where orderId = %s", (orderId, ))
             resultado = cursor.fetchone()
@@ -23,11 +25,14 @@ class orderModelDAO():
             # CALCULAR TOTAL
             for registro in carrito:
                 total += int(registro['modelQty'])*float(registro['modelPrice'])*float(registro['materialPriceModifier'])
+                totalQty += registro['modelQty']
 
             if username != None:
                 cursor.execute("call insertOrderWithUser(%s, %s, %s, %s, %s)", (orderId, fechaActual, total, username, address))
+                deliveryMicroservice.insertDeliveryUser(orderId, fechaActual, totalQty, username, address)
             else:
                 cursor.execute("call insertOrderNoUser(%s, %s, %s, %s)", (orderId, fechaActual, total, address))
+                deliveryMicroservice.insertDeliveryNoUser(orderId,fechaActual,totalQty,address)
             
             for registro in carrito:
                 if registro['isCustom'] == False:
