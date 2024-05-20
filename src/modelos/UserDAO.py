@@ -35,9 +35,10 @@ class UserDAO():
             cursor.close()
 
     @classmethod
-    def getFullUserData(self, db):
+    def getFullUserData(self):
         try:
-            cursor = db.connection.cursor()
+            db = Conexion.generarConexion()
+            cursor = db.cursor()
             cursor.execute("select userName, usertype, userpassword, typeId, userTypeName from users inner join usertypes on users.usertype = usertypes.typeid")
             resultados = cursor.fetchall()
             fullUserList = []

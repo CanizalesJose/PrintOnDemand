@@ -649,9 +649,18 @@ def soapAddUser():
             return redirect(url_for('soapAddUser'))
         except Exception as ex:
             return str(ex)
-    else:
+    if request.method == 'GET':
         # Mostrar el formulario para agregar usuario
-        return render_template('auth/AddUserSOAP.html')
+        try:
+            with app.app_context():
+                cliente = Client('http://localhost:5001/soap?wsdl')
+                usersList = json.loads(cliente.service.showUsers())
+
+                usersListHTML = auxMethods.generateSOAPUsersList(usersList)
+
+            return render_template('auth/AddUserSOAP.html', usersListHTML=usersListHTML)
+        except Exception as ex:
+            return str(ex)
 
 # Iniciar servidor SOAP
 def initSOAP():

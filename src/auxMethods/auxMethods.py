@@ -11,6 +11,7 @@ from modelos.orderModel import orderModel
 from modelos.orderModelDAO import orderModelDAO
 from modelos.orderDAO import orderDAO
 from modelos.UserService import UserService
+import json
 
 class auxMethods():
 
@@ -121,7 +122,7 @@ class auxMethods():
                 <option value="{registro.getUserTypeId()}">{registro.getUserTypeName()}</option>
             """
         # Generar la lista de usuarios registrados
-        usersList = UserDAO.getFullUserData(db)
+        usersList = UserDAO.getFullUserData()
         userListHTML = ""
         for registro in usersList:
             userListHTML += f"""
@@ -402,3 +403,32 @@ class auxMethods():
             <hr>
         """
         return orderListHTML
+    
+    @classmethod
+    def generateSOAPUsersList(self, usersList):
+        userListHTML = ''
+        auxUsers = ''
+        usersListHTML = ''
+
+        for user in usersList:
+            auxUsers += f"""
+                <tr>
+                    <td>{user['user']['username']}</td>
+                    <td>{user['usertype']["usertypename"]}</td>
+                </tr>
+            """
+            # Fin de For
+        userListHTML += f"""
+        <table class="table table-hover text-center">
+            <thead>
+                <tr>
+                    <th>UserName</th>
+                    <th>UserType</th>
+                </tr>
+            </thead>
+            <tbody>
+                {auxUsers}
+            </tbody>
+        </table>
+        """
+        return userListHTML
