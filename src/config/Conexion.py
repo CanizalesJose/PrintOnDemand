@@ -9,3 +9,11 @@ class Conexion():
             return db
         except Exception as ex:
             raise Exception(ex)
+    
+    @classmethod
+    def generarConexionCustom(self, newHost, newUser, newPassword, newDB):
+        try:
+            db = MySQLdb.connect(host=newHost, user=newUser, passwd=newPassword, db=newDB)
+            return db
+        except Exception as ex:
+            raise Exception(ex)

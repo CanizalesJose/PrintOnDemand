@@ -11,6 +11,7 @@ from modelos.orderModel import orderModel
 from modelos.orderModelDAO import orderModelDAO
 from modelos.orderDAO import orderDAO
 from modelos.UserService import UserService
+from modelos.deliveryMicroservice import deliveryMicroservice
 
 class auxMethods():
 
@@ -353,6 +354,10 @@ class auxMethods():
                     <h6 class="text-start">Dirección de entrega: {pedido.getOrderAddress()}</h6>
                     <hr>
                 """
+                try:
+                    orderListHTML+= deliveryMicroservice.showDeliveryStatus(pedido.getOrderId())
+                except Exception as ex:
+                    print("No se ha encontrado pedido")
         else:
             orderListHTML = ""
 
@@ -401,4 +406,8 @@ class auxMethods():
             <h6 class="text-start">Dirección de entrega: {pedido.getOrderAddress()}</h6>
             <hr>
         """
+        try:
+            orderListHTML += deliveryMicroservice.showDeliveryStatus(pedido.getOrderId())
+        except Exception as ex:
+            print("No se pudo conectar al microservicio de entregas...")
         return orderListHTML
