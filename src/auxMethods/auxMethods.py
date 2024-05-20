@@ -326,6 +326,7 @@ class auxMethods():
                                     <tr>
                                         <th scope="col">Modelo</th>
                                         <th scope="col">Archivo</th>
+                                        <th scope="col">Nombre del modelo</th>
                                         <th scope="col">Material</th>
                                         <th scope="col">Qty.</th>
                                         <th scope="col">Precio</th>
