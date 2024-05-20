@@ -11,11 +11,8 @@ from modelos.orderModel import orderModel
 from modelos.orderModelDAO import orderModelDAO
 from modelos.orderDAO import orderDAO
 from modelos.UserService import UserService
-<<<<<<< HEAD
 import json
-=======
 from modelos.deliveryMicroservice import deliveryMicroservice
->>>>>>> e086735b10f0aef13f1497728aac79caf57ceba6
 
 class auxMethods():
 
@@ -410,7 +407,6 @@ class auxMethods():
             <h6 class="text-start">Dirección de entrega: {pedido.getOrderAddress()}</h6>
             <hr>
         """
-<<<<<<< HEAD
         return orderListHTML
     
     @classmethod
@@ -441,10 +437,8 @@ class auxMethods():
         </table>
         """
         return userListHTML
-=======
         try:
             orderListHTML += deliveryMicroservice.showDeliveryStatus(pedido.getOrderId())
         except Exception as ex:
             print("No se pudo conectar al microservicio de entregas...")
         return orderListHTML
->>>>>>> e086735b10f0aef13f1497728aac79caf57ceba6
