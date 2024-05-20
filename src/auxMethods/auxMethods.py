@@ -408,6 +408,10 @@ class auxMethods():
             <h6 class="text-start">Dirección de entrega: {pedido.getOrderAddress()}</h6>
             <hr>
         """
+        try:
+            orderListHTML+= deliveryMicroservice.showDeliveryStatus(pedido.getOrderId())
+        except Exception as ex:
+            print("No se ha encontrado pedido")
         return orderListHTML
     
     @classmethod
