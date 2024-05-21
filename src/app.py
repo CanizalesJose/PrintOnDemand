@@ -663,15 +663,42 @@ def soapAddUser():
             return str(ex)
         
 # Eliminar usuarios con SOAP
-@app.route('soap/deleteUser', methods=['GET', 'POST'])
+@app.route('/soap/deleteUser', methods=['GET', 'POST'])
 def soapDeleteUser():
     if request.method == 'POST':
+        resultado = 1
+        print("Acceso a SOAP: soapDeleteUser()")
         try:
             with app.app_context():
                 cliente = Client('http://localhost:5001/soap?wsdl')
-                cliente.service.deleteUser(request.form['currentUser'])
+                resultado = cliente.service.deleteUser(request.form['currentUser'])
+
+                if (resultado == 1):
+                    flash(f'Código de salida: {resultado}\nError en eliminación')
+                else:
+                    flash(f'Código de salida: {resultado}\nEliminación exitosa')
+            return redirect(url_for('soapAddUser'))
         except Exception as ex:
-            raise Exception(ex)
+            flash(f'Código de salida: {resultado}\nError en registro')
+    else:
+        return redirect(url_for('soapAddUser'))
+
+@app.route('/soap/updateUser', methods=['GET', 'POST'])
+def soapUpdateUser():
+    if request.method == "POST":
+        print("Acceso a SOAP: soapUpdateUser()")
+
+        try:
+            with app.app_context():
+                cliente = Client('http://localhost:5001/soap?wsdl')
+                resultado = cliente.service.updateUser(request.form['currentUser'], request.form['newUserName'], int(request.form['newUserType']))
+                if (resultado == 1):
+                    flash(f'Código de salida: {resultado}\nActualización fallida')
+                else:
+                    flash(f'Código de salida: {resultado}\nActualización exitosa')
+            return redirect(url_for('soapAddUser'))
+        except Exception as ex:
+            return redirect(url_for('soapAddUser'))
     else:
         return redirect(url_for('soapAddUser'))
 

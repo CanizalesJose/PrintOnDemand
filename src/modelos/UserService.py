@@ -21,9 +21,26 @@ class UserService(ServiceBase):
             lista.append(nuevo)
         return json.dumps(lista)
     
-    @rpc(_returns=str)
+    @rpc(str, _returns=int)
     def deleteUser(ctx, username):
         try:
             db = Conexion.generarConexion()
+            cursor = db.cursor()
+            cursor.execute("call deleteUser(%s)", (username, ))
+            db.commit()
+            cursor.close()
+            return 0
         except Exception as ex:
-            raise Exception(ex)
+            return 1
+
+    @rpc(str, str, int, _returns=int)
+    def updateUser(ctx, currentUser, newUser, usertype):
+        try:
+            db = Conexion.generarConexion()
+            cursor = db.cursor()
+            cursor.execute("call updateUser(%s, %s, %s)", (currentUser, newUser, usertype))
+            db.commit()
+            cursor.close()
+            return 0
+        except Exception as ex:
+            return 1

@@ -443,12 +443,12 @@ class auxMethods():
                             <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estas seguro de actualizar el usuario?')">Actualizar</button>
                         </form>
 
-                        <form action="soap/deleteUser" method="POST">
+                        <form action="/soap/deleteUser" method="POST">
                             <input type="hidden" name="currentUser" value="{user['user']['username']}">
                             <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estas seguro de eliminar el usuario?')">Eliminar</button>
                         </form>
 
-                        <form action="soap/searchUserDelivery" method="POST">
+                        <form action="/soap/searchUserDelivery" method="POST">
                             <input type="hidden" name="currentUser" value="{user['user']['username']}">
                             <button type="submit" class="btn btn-success bg-gradient mt-3">Pedidos</button>
                         </form>
