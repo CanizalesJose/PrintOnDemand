@@ -418,13 +418,42 @@ class auxMethods():
     def generateSOAPUsersList(self, usersList):
         userListHTML = ''
         auxUsers = ''
-        usersListHTML = ''
 
         for user in usersList:
             auxUsers += f"""
                 <tr>
                     <td>{user['user']['username']}</td>
                     <td>{user['usertype']["usertypename"]}</td>
+                    <td>
+
+                        <form action="/soap/updateUser" method="POST">
+                            <input type="hidden" name="currentUser" value="{user['user']['username']}">
+
+                            <div class="form-floating mb-1">
+                                <input type="text" class="form-control" name="newUserName" value="{user['user']['username']}">
+                                <label>Nuevo nombre</label>
+                            </div>
+                            <div class="form-floating mb-1">
+                                <select class="form-select" aria-label="Selección de tipo" name="newUserType" placeholder="newUserType">
+                                    <option value="1">Administrador</option>
+                                    <option value="2">Usuario cliente</option>
+                                </select>
+                                <label>Tipo de Usuario</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary bg-gradient mt-3" onclick="return confirm('¿Estas seguro de actualizar el usuario?')">Actualizar</button>
+                        </form>
+
+                        <form action="soap/deleteUser" method="POST">
+                            <input type="hidden" name="currentUser" value="{user['user']['username']}">
+                            <button type="submit" class="btn btn-danger bg-gradient mt-3" onclick="return confirm('¿Estas seguro de eliminar el usuario?')">Eliminar</button>
+                        </form>
+
+                        <form action="soap/searchUserDelivery" method="POST">
+                            <input type="hidden" name="currentUser" value="{user['user']['username']}">
+                            <button type="submit" class="btn btn-success bg-gradient mt-3">Pedidos</button>
+                        </form>
+
+                    </td>
                 </tr>
             """
             # Fin de For
@@ -434,6 +463,7 @@ class auxMethods():
                 <tr>
                     <th>UserName</th>
                     <th>UserType</th>
+                    <th>Control</th>>
                 </tr>
             </thead>
             <tbody>
@@ -442,8 +472,4 @@ class auxMethods():
         </table>
         """
         return userListHTML
-        try:
-            orderListHTML += deliveryMicroservice.showDeliveryStatus(pedido.getOrderId())
-        except Exception as ex:
-            print("No se pudo conectar al microservicio de entregas...")
-        return orderListHTML
+

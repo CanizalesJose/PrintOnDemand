@@ -661,6 +661,19 @@ def soapAddUser():
             return render_template('auth/AddUserSOAP.html', usersListHTML=usersListHTML)
         except Exception as ex:
             return str(ex)
+        
+# Eliminar usuarios con SOAP
+@app.route('soap/deleteUser', methods=['GET', 'POST'])
+def soapDeleteUser():
+    if request.method == 'POST':
+        try:
+            with app.app_context():
+                cliente = Client('http://localhost:5001/soap?wsdl')
+                cliente.service.deleteUser(request.form['currentUser'])
+        except Exception as ex:
+            raise Exception(ex)
+    else:
+        return redirect(url_for('soapAddUser'))
 
 # Iniciar servidor SOAP
 def initSOAP():

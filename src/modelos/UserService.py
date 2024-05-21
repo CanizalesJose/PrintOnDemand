@@ -1,8 +1,8 @@
 from spyne import rpc, ServiceBase
-from spyne.protocol.soap import Soap11
-from spyne.server.wsgi import WsgiApplication
 from modelos.UserDAO import UserDAO
 from modelos.user import user
+from config.Conexion import Conexion
+from modelos.deliveryMicroservice import deliveryMicroservice
 import json
 
 class UserService(ServiceBase):
@@ -20,3 +20,10 @@ class UserService(ServiceBase):
             nuevo = {'user' : {'username' : user['usuario'].getUserName(), 'usertype' : user['usuario'].getUserType()}, 'usertype' : {'usertypeid' : user['usertype'].getUserTypeId(), 'usertypename' : user['usertype'].getUserTypeName()}}
             lista.append(nuevo)
         return json.dumps(lista)
+    
+    @rpc(_returns=str)
+    def deleteUser(ctx, username):
+        try:
+            db = Conexion.generarConexion()
+        except Exception as ex:
+            raise Exception(ex)
