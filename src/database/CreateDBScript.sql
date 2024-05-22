@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS validMaterials(
     foreign key (modelKey) references models3D(modelId)
     on delete cascade,
     foreign key (materialKey) references materials(materialId)
-    on delete cascade
+    on delete cascade on update cascade
 )ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS orderModels(
