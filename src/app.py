@@ -702,6 +702,20 @@ def soapUpdateUser():
     else:
         return redirect(url_for('soapAddUser'))
 
+@app.route('/soap/searchUserDelivery', methods=['GET', 'POST'])
+def soapSearchDelivery():
+    if request.method == "POST":
+        print("Acceso a SOAP: soapSearchDelivery()")
+        try:
+            pedidos = ""
+            with app.app_context():
+                cliente = Client('http://localhost:5001/soap?wsdl')
+                pedidos = cliente.service.searchDelivery(request.form['currentUser'])
+            flash(pedidos)
+            return redirect(url_for('soapAddUser'))
+        except Exception as ex:
+            return redirect(url_for('soapAddUser'))
+
 # Iniciar servidor SOAP
 def initSOAP():
     from wsgiref.simple_server import make_server

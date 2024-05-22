@@ -44,3 +44,11 @@ class UserService(ServiceBase):
             return 0
         except Exception as ex:
             return 1
+    
+    @rpc(str, _returns=str)
+    def searchDelivery(ctx, username):
+        try:
+            resultado = deliveryMicroservice.showUserDelivery(username)
+            return resultado
+        except Exception as ex:
+            return ""

@@ -45,8 +45,32 @@ class deliveryMicroservice:
             if registro[0] != None:
                 statusHTML += f'<h6 class="text-start"> Estado del envío: {registro[0]} - {registro[1]}</h6>'
                 statusHTML += '<hr>'
-                print("Se encontró pedido desde microservicio")
             cursor.close()
         except Exception as ex:
             raise Exception(ex)
         return statusHTML
+    
+    @classmethod
+    def showUserDelivery(self, username):
+        listHTML = ""
+        try:
+            db = self.generarConexionMicroservicio()
+            cursor = db.cursor()
+            cursor.execute("select orderKey, orderDate, orderTotalQty, orderUser, orderStatus from delivery where orderUser=%s", (username, ))
+            registro = cursor.fetchall()
+            if registro == ():
+                return ""
+            else:
+                for pedido in registro:
+                    listHTML += f"""
+                        <hr>
+                        <h6 class="text-start">Usuario: {pedido[3]}</h6>
+                        <h6 class="text-start">Clave de envío: {pedido[0]}</h6>
+                        <h6 class="text-start">Estado del envío: {pedido[4]}</h6>
+                        <h6 class="text-start">Fecha: {pedido[1]}</h6>
+                        <h6 class="text-start">Artículos: {pedido[2]}</h6>
+                        <hr>
+                    """
+                return listHTML
+        except Exception as ex:
+            raise Exception(ex)
