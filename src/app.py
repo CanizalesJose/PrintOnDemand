@@ -11,6 +11,9 @@ from config.config import config
 import random
 from suds.client import Client
 import json
+from flask_restful import Api
+import requests
+
 from auxMethods.auxMethods import auxMethods
 from modelos.model3D import Model3D
 from modelos.model3DDAO import model3DDAO
@@ -25,12 +28,16 @@ from modelos.orderModel import orderModel
 from modelos.orderModelDAO import orderModelDAO
 from modelos.orderDAO import orderDAO
 from modelos.UserService import UserService
+from resources.orderResource import orderResource
 #endregion
 
 # Crear instancias
 app = Flask(__name__)
+api = Api(app)
 db = MySQL(app)
 login_manager_app = LoginManager(app)
+
+api.add_resource(orderResource, '/rest/orders')
 
 @login_manager_app.user_loader
 def load_user(userName):
@@ -625,6 +632,7 @@ def rutaInexistente(e):
 
 # Web Service
 
+# ----------- SOAP ------------
 @app.route('/soap/addUser', methods=['GET', 'POST'])
 def soapAddUser():
     if request.method == 'POST':
@@ -712,9 +720,30 @@ def soapSearchDelivery():
                 cliente = Client('http://localhost:5001/soap?wsdl')
                 pedidos = cliente.service.searchDelivery(request.form['currentUser'])
             flash(pedidos)
+            response = requests.get('http://localhost:5000/rest/orders')
+            print(response)
+            restPedidos = auxMethods.searchRESTOrderByUser(response.json(), request.form['currentUser'])
+            restPedidos = auxMethods.generateRESTOrdersList(restPedidos)
+            flash(restPedidos)
             return redirect(url_for('soapAddUser'))
         except Exception as ex:
             return redirect(url_for('soapAddUser'))
+
+# ------------- REST --------------
+# Este es una vista para el recurso compartido con REST, no significa que se acceda a el de esta forma
+# sino que es un método para poder visualizarlo de forma mas cómoda
+@app.route('/webService/resource/orders')
+def seeOrdersResource():
+    if request.method == "GET":
+        response = requests.get('http://localhost:5000/rest/orders')
+        if response.status_code == 200:
+            restOrdersHTML = auxMethods.generateRESTOrdersList(response.json())
+            return render_template('auth/restOrders.html', restOrdersHTML=restOrdersHTML)
+        else:
+            return render_template('auth/restOrders.html',restOrdersHTML="Error: recurso no encontrado")
+    else:
+        return redirect(url_for('iniciarSesion'))
+
 
 # Iniciar servidor SOAP
 def initSOAP():
