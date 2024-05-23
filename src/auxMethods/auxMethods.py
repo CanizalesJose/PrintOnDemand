@@ -473,3 +473,49 @@ class auxMethods():
         """
         return userListHTML
 
+    @classmethod
+    def generateRESTOrdersList(self, pedidos):
+        pedidos = json.loads(pedidos)
+        html = """
+            <div class="overflow-scroll">
+            <table class="table table-hover text-center">
+                <thead>
+                    <tr>
+                        <th>OrderId</th>
+                        <th>OrderUser</th>
+                        <th>OrderModelName</th>>
+                        <th>ordermodelprice</th>
+                        <th>ordermodelqty</th>
+                        <th>ordermaterialpricemodifier</th>
+                        <th>total</th>
+                    </tr>
+                </thead>
+                <tbody>
+        """
+        for orden in pedidos:
+            html += f"""
+                <tr>
+                    <td>{orden['orderid']}</td>
+                    <td>{orden['orderuser']}</td>
+                    <td>{orden['ordermodelname']}</td>
+                    <td>{orden['ordermodelprice']}</td>
+                    <td>{orden['ordermodelqty']}</td>
+                    <td>{orden['ordermaterialpricemodifier']}</td>
+                    <td>{orden['total']}</td>
+                </tr>
+            """
+        html += """
+                </tbody>
+            </table>
+            </div>
+        """
+        return html
+
+    @classmethod
+    def searchRESTOrderByUser(self, pedidos, username):
+        userOrders = []
+        pedidos = json.loads(pedidos)
+        for orden in pedidos:
+            if orden['orderuser'] == username:
+                userOrders.append(orden)
+        return json.dumps(userOrders)
